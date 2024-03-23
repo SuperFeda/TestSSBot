@@ -3,7 +3,7 @@ import disnake, sqlite3
 from disnake.ext import commands
 from disnake import Localized
 
-from ssbot import SSBot
+from main import SSBot
 from cogs.hadlers import utils, bot_choices
 from cogs.hadlers.embeds import template_embeds
 
@@ -15,7 +15,7 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="get_salary_list")
     async def get_salary_list(self, ctx):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
@@ -32,7 +32,7 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="reset_all_workers_salary")
     async def reset_all_workers_salary(self, ctx):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
@@ -56,7 +56,7 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="edit_one_worker_salary")
     async def edit_one_worker_salary(self, ctx, worker: disnake.Member, salary: int):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         user_id = worker.id
@@ -87,7 +87,7 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="edit_all_worker_salary")
     async def edit_all_worker_salary(self, ctx, salary: int, sure: bool = commands.Param(choices=bot_choices.CHOICE_FOR_SURE, description=Localized("Are you sure?", key="edit_all_worker_salary.sure.description"))):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         if sure is False or sure is None:
@@ -119,14 +119,14 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="for_delete")
     async def for_delete(self, ctx):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         await ctx.channel.purge()
 
     @commands.slash_command(name="add_promo_code")
     async def add_promo_code(self, ctx, promo_code_name: str, discount_rate: int, count: int | None = None, pc_type: str = commands.Param(choices=bot_choices.CHOICE_FOR_PC_TYPE)):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         pc_data = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
@@ -165,7 +165,7 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="remove_promo_code")
     async def remove_promo_code(self, ctx, promo_code_name: str, pc_type: str = commands.Param(choices=bot_choices.CHOICE_FOR_PC_TYPE)):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         pc_data = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
@@ -178,7 +178,7 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="stop_take_order")
     async def stop_take_order(self, ctx, true_false: bool = commands.Param(choices=bot_choices.CHOICE_FOR_SURE)):
-        if ctx.author.name != SSBot.BOT_CONFIG["owner_name"] and ctx.author.id != SSBot.BOT_CONFIG["owner_id"]:
+        if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         SSBot.BOT_CONFIG["bot_can_take_order"] = true_false

@@ -2,7 +2,7 @@ import disnake, sqlite3
 
 from disnake.ext import commands
 
-from ssbot import SSBot
+from main import SSBot
 from cogs.hadlers import utils
 from cogs.hadlers.embeds import template_embeds
 

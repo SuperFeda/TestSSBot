@@ -2,7 +2,7 @@ import disnake, sqlite3
 
 from disnake.ext import commands
 
-from ssbot import BOT, SSBot
+from main import BOT, SSBot
 from cogs.hadlers import utils
 
 
@@ -12,7 +12,7 @@ class WorkerCommands(commands.Cog):
 
     @commands.slash_command(name="rp_guide")
     async def rp_guide(self, ctx):
-        if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_CONFIG["worker_role_id"]) not in ctx.author.roles:
+        if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["worker_role_id"]) not in ctx.author.roles:
             embed = utils.create_embed(title="Не достаточно прав", color=disnake.Color.red(), content="У вас нет прав на использование этой команды.")
             return await ctx.send(embed=embed, ephemeral=True)
 
@@ -31,12 +31,12 @@ nbt.display.Name=SuperFeda
 
     @commands.slash_command(name="add_salary")
     async def add_salary(self, ctx, salary: int, promo_code: str | None = None):
-        if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_CONFIG["worker_role_id"]) not in ctx.author.roles:
+        if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["worker_role_id"]) not in ctx.author.roles:
             embed = utils.create_embed(title="Не достаточно прав", color=disnake.Color.red(), content="У вас нет прав на использование этой команды.")
             return await ctx.send(embed=embed, ephemeral=True)
 
         user_id = ctx.author.id
-        LOG_CHANNEL = BOT.get_channel(SSBot.BOT_CONFIG["log_channel_id"])
+        LOG_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["log_channel_id"])
 
         connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
         cursor = connection.cursor()
@@ -71,7 +71,7 @@ nbt.display.Name=SuperFeda
 
     @commands.slash_command(name="check_my_salary")
     async def check_my_salary(self, ctx):
-        if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_CONFIG["worker_role_id"]) not in ctx.author.roles:
+        if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["worker_role_id"]) not in ctx.author.roles:
             embed = utils.create_embed(title="Не достаточно прав", color=disnake.Color.red(), content="У вас нет прав на использование этой команды.")
             return await ctx.send(embed=embed, ephemeral=True)
 

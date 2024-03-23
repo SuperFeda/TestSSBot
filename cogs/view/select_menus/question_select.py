@@ -2,7 +2,6 @@ import disnake
 
 from disnake.ext import commands
 
-from ssbot import SSBot
 from cogs.hadlers.embeds import support_question_embeds
 from cogs.view.buttons.contact_here_button import ContactHereButton
 

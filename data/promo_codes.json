@@ -2,15 +2,20 @@
     "common_code": {
         "SSOpenCode": {
             "discount_rate": 35,
-            "count_for_use": 250
+            "count_for_use": 249
         },
         "AlikGaming": {
             "discount_rate": 0
+        },
+        "ExcluvCode": {
+            "discount_rate": 75,
+            "count_for_use": 1,
+            "users": [
+                294814616482086912
+            ]
         }
     },
-
     "youtube_code": {},
-
     "service_code": {
         "OptFineFreeCape": {
             "service": "cape"

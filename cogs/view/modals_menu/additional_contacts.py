@@ -2,7 +2,7 @@ import disnake, sqlite3
 
 from disnake.ext import commands
 
-from ssbot import SSBot
+from main import SSBot
 
 
 # Класс для регистрации этого файла как кога, чтобы его можно было загрузить в main

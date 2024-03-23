@@ -1,6 +1,6 @@
 import disnake
 
-from ssbot import SSBot
+from main import SSBot
 
 
 SS_LOGO = disnake.File("images/SkylightServices_new.png", filename="ss_logo.jpg")
@@ -28,7 +28,7 @@ WRITE_DESC_EMBED = disnake.Embed(title="Ввод описания", color=SSBot.
 )
 
 WARN_PM_IS_OFF = disnake.Embed(title="Ошибка", color=disnake.Color.red()).add_field(
-    name="Похоже, что у вас отключено принятие личных сообщений. Пожалуйста, следуйте инструкции ниже, для того, чтобы исправить это:",
+    name="Похоже, что у вас отключено принятие личных сообщений. Пожалуйста, следуйте инструкции предоставленной по данной ссылке: https://www.youtube.com/watch?v=RijqClO1m5c",
     value="", inline=False
 )
 

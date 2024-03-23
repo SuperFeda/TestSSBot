@@ -2,7 +2,7 @@ import disnake, sqlite3
 
 from disnake.ext import commands
 
-from ssbot import SSBot, BOT
+from main import SSBot, BOT
 from cogs.hadlers import utils, dicts
 from cogs.view.buttons.take_order import TakeOrder
 from cogs.view.modals_menu.promo_code_enter import PromoCodeEnterMenu
@@ -28,7 +28,7 @@ class DonationAndPromoCodeButtons(disnake.ui.View):
         button.disabled = True
 
         user_id = ctx.author.id
-        WORKER_ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_CONFIG["worker_order_channel_id"])
+        WORKER_ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["worker_order_channel_id"])
 
         connection = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
         cursor = connection.cursor()

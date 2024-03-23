@@ -2,7 +2,7 @@ import disnake, sqlite3
 
 from disnake.ext import commands
 
-from ssbot import SSBot
+from main import SSBot
 from cogs.hadlers.embeds.ordering_embeds import WRITE_DESC_EMBED
 from cogs.hadlers.embeds.template_embeds import ENTER_REWIEW_EMBED
 

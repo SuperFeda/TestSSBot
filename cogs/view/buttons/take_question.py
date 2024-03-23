@@ -2,8 +2,8 @@ import disnake
 
 from disnake.ext import commands
 
+from main import SSBot, BOT
 from cogs.hadlers import utils
-from ssbot import SSBot, BOT
 
 
 class TakeQuestionButtonReg(commands.Cog):
@@ -23,7 +23,7 @@ class TakeQuestionButton(disnake.ui.View):
 
     @disnake.ui.button(label="Принять", style=disnake.ButtonStyle.green, custom_id="take_question_button")
     async def take_question(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
-        SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_CONFIG["support_channel_id"])
+        SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
         message = await interaction.channel.fetch_message(interaction.message.id)
         client_id_from_embed = await self.for_in_embed(in_=message.embeds[0]._fields[1].items())
         client = interaction.guild.get_member(int(client_id_from_embed))

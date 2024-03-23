@@ -1,7 +1,6 @@
-from ssbot import SSBot
+from main import SSBot
 
 # Цены всех услуг
-# Этот dict еще используется для подсчета зарплат сотрудников, поэтому у некоторых услуг значение стоимости = 0
 SERVICE_PRICES = {
     SSBot.SKIN64: 270,
     # "Скин 128x128": ,
@@ -30,12 +29,30 @@ NOT_STATIC_PRICE = {
     SSBot.MODEL: 149,
     SSBot.ANIM_MODEL: 159,
     SSBot.TEXTURE_MODEL: 159,
-    SSBot.LETTER_LOGO_2: 249,
-    SSBot.SPIGOT_PLUGIN: "Цена договорная"
+    SSBot.LETTER_LOGO_2: 249
 }
 
-# Вид того, как должен выглядеть файл promo_codes.json из папки data без данных о промокодах (я не знаю зачем это здесь)
+# Сумма денег в рублях, которая будет отправляться в кошелек сотрудника после принятия заказа
+SUMM_WORKER = {
+    SSBot.SKIN64: 90,
+
+    SSBot.MODEL: 0,
+    SSBot.ANIM_MODEL: 0,
+    SSBot.TEXTURE_MODEL: 0,
+
+    SSBot.CAPE: 30,
+    SSBot.TOTEM: 25,
+    SSBot.TEXTURE: 35,
+
+    SSBot.LETTER_LOGO: 95,
+    SSBot.LETTER_LOGO_2: 0,
+
+    SSBot.CHARACTERS_DESIGN: 350,
+}
+
+# Вид того, как должен выглядеть файл promo_codes.json из папки data без данных о промокодах (idk зачем это здесь)
 BASE_PC_FILE = {
-  "common_code": {},
-  "youtube_code": {}
+    "common_code": {},
+    "youtube_code": {},
+    "service_code": {}
 }

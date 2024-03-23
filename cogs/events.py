@@ -1,9 +1,10 @@
-import disnake, sqlite3, os
-
+from disnake import DMChannel, ChannelType, errors, Embed, Color, File, Message
 from disnake.ext import commands
+from sqlite3 import connect
+from os import listdir, mkdir
 from colorama import Fore
 
-from ssbot import BOT, SSBot
+from main import BOT, SSBot
 from cogs.hadlers import utils
 from cogs.hadlers.embeds import ordering_embeds, template_embeds, support_question_embeds
 from cogs.view.select_menus.question_select import QuestionSelectView
@@ -22,54 +23,60 @@ class BotEvents(commands.Cog):
         # отправка сообщения, через которое происходит оформление заказа в канал ORDER_CHANNEL, как только бот становится активен
         print(f"{Fore.RED}[WARN]{Fore.RESET} Бот запущен и готов начать самую большую оргию")
 
-        ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_CONFIG["order_channel_id"])
-        SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_CONFIG["support_channel_id"])
+        ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["order_channel_id"])
+        SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
 
         await SUPPORT_CHANNEL.send(embed=support_question_embeds.SUPPORT_EMBED, view=QuestionSelectView(self.client))
         await ORDER_CHANNEL.send(embed=ordering_embeds.START_ORDERING_EMBED, file=ordering_embeds.SS_LOGO, view=OrderMessageButtons(self.client))
 
+    # @commands.Cog.listener()
+    # async def on_member_join(self, message):
+    #     embed = disnake.Embed(title="Новый участник!", color=SSBot.DEFAULT_COLOR)
+    #     embed.add_field(name="", value="")
+    #     embed.set_author(name=f"{message.author.display_name} // {message.author.name}", icon_url=await utils.get_avatar(ctx_user_avatar=message.author.avatar))
+
     @commands.Cog.listener()
     async def on_message(self, message):
-        connection = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
+        connection = connect(SSBot.PATH_TO_CLIENT_DB)
         cursor = connection.cursor()
         cursor.execute("SELECT can_description FROM settings WHERE user_id=?", (message.author.id,))
         result = cursor.fetchone()
         can_description_var = result[0] if result else None
         connection.close()
 
-        if message.channel.type is disnake.ChannelType.private_thread and message.author.name in message.channel.name:
+        if message.channel.type is ChannelType.private_thread and message.author.name in message.channel.name:
             def is_not_bot(m):
                 return not m.author.bot
 
             await message.channel.purge(check=is_not_bot)  # Удаление сообщений в новосозданной ветке
 
         if can_description_var == 1 or can_description_var is True:
-            if isinstance(message.channel, disnake.DMChannel):
+            if isinstance(message.channel, DMChannel):
                 await self.order_path(message=message)
             try:
                 await self.review_path(message=message)
             except AttributeError:
                 pass
 
-        LOG_CHANNEL = BOT.get_channel(SSBot.BOT_CONFIG["log_channel_id"])
+        LOG_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["log_channel_id"])
 
         if message.author != BOT.user:                                        # отправка сообщений от всех пользователей в LOG_CHANNEL, если id канала, где
-            if message.channel.id in SSBot.BOT_CONFIG["banned_channels_id"]:  # было опубликованно сообщение не находится в banned_channels и автор сообщения не SSBot
+            if message.channel.id in SSBot.BOT_DATA["banned_channels_id"]:  # было опубликованно сообщение не находится в banned_channels и автор сообщения не SSBot
                 return
             avatar = await utils.get_avatar(ctx_user_avatar=message.author.avatar)
 
-            embed = disnake.Embed(title="Сообщение", color=SSBot.DEFAULT_COLOR)
+            embed = Embed(title="Сообщение", color=SSBot.DEFAULT_COLOR)
             embed.add_field(name=f'"<#{message.channel.id}>" :>> ', value=message.content)
             embed.set_author(name=message.author.display_name, icon_url=avatar)
             try:
                 await LOG_CHANNEL.send(embed=embed)
-            except disnake.errors.HTTPException:
+            except errors.HTTPException:
                 await LOG_CHANNEL.send(f"В <#{message.channel.id}> было отправлено сообщение длинной больше 1024 символов от {message.author.display_name} ({message.author.name})")
 
         await BOT.process_commands(message)
 
     def load_can_description_var(self, user_id) -> None:
-        connection_ = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
+        connection_ = connect(SSBot.PATH_TO_CLIENT_DB)
         cursor_ = connection_.cursor()
         cursor_.execute(
             "INSERT INTO settings (user_id, can_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET can_description=?",
@@ -78,7 +85,7 @@ class BotEvents(commands.Cog):
         connection_.commit()
         connection_.close()
 
-    async def order_path(self, message) -> None | disnake.Message:
+    async def order_path(self, message) -> None | Message:
         len_message_content = len(message.content)
         len_message_attachments = len(message.attachments)
 
@@ -95,7 +102,7 @@ class BotEvents(commands.Cog):
         pictures = None
         embed_for_send = []
 
-        connection_ = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
+        connection_ = connect(SSBot.PATH_TO_CLIENT_DB)
         cursor_ = connection_.cursor()
         cursor_.execute(
             "INSERT INTO settings (user_id, service_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET service_description=?",
@@ -105,10 +112,10 @@ class BotEvents(commands.Cog):
         connection_.close()
 
         async with message.channel.typing():
-            if message.author.name in os.listdir("cache/"):  # если папка с именем пользователя уже есть в папке с кешем, то удалить ее и ее содержимое
+            if message.author.name in listdir("cache/"):  # если папка с именем пользователя уже есть в папке с кешем, то удалить ее и ее содержимое
                 await utils.delete_files_from_cache(author_name=message.author.name)
 
-            desc = disnake.Embed(title="Проверка описания", color=SSBot.DEFAULT_COLOR)
+            desc = Embed(title="Проверка описания", color=SSBot.DEFAULT_COLOR)
             desc.add_field(
                 name=f"Проверьте введенное вами описание и прикрепленные фотографии (при наличии):",
                 value=f"**{message.content}**", inline=False
@@ -128,15 +135,15 @@ class BotEvents(commands.Cog):
                         banned_filenames.append(image.filename)
                     else:
                         try:
-                            os.mkdir(f"cache/{message.author.name}/")  # создание папки с именем пользователя в кеше
+                            mkdir(f"cache/{message.author.name}/")  # создание папки с именем пользователя в кеше
                         except FileExistsError:
                             pass
 
                         await image.save(f"cache/{message.author.name}/{image.filename}")
 
                 if banned_filenames:
-                    banned_files_embed = disnake.Embed(
-                        title="Файлы заблокированы", color=disnake.Color.red(),
+                    banned_files_embed = Embed(
+                        title="Файлы заблокированы", color=Color.red(),
                         description="**Список заблокированных файлов из-за не поддерживаемого формата:** {}".format(", ".join(banned_filenames))
                     )
                     embed_for_send.append(banned_files_embed)
@@ -158,7 +165,7 @@ class BotEvents(commands.Cog):
 
         await message.channel.send(embeds=embed_for_send, files=pictures, components=components_list)
 
-    async def review_path(self, message) -> None | disnake.Message:
+    async def review_path(self, message) -> None | Message:
         if "отзыв" in message.channel.name:
             len_message_content = len(message.content)
             len_message_attachments = len(message.attachments)
@@ -180,7 +187,7 @@ class BotEvents(commands.Cog):
 
             picture = None
 
-            connection_ = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
+            connection_ = connect(SSBot.PATH_TO_CLIENT_DB)
             cursor_ = connection_.cursor()
             cursor_.execute(
                 "INSERT INTO settings (user_id, service_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET service_description=?",
@@ -190,10 +197,10 @@ class BotEvents(commands.Cog):
             connection_.close()
 
             async with message.channel.typing():
-                if message.author.name in os.listdir("cache/"):  # если папка с именем пользователя уже есть в папке с кешем, то удалить ее и ее содержимое
+                if message.author.name in listdir("cache/"):  # если папка с именем пользователя уже есть в папке с кешем, то удалить ее и ее содержимое
                     await utils.delete_files_from_cache(author_name=message.author.name)
 
-                desc = disnake.Embed(title="Проверка описания", color=SSBot.DEFAULT_COLOR)
+                desc = Embed(title="Проверка описания", color=SSBot.DEFAULT_COLOR)
                 desc.add_field(
                     name=f"Проверьте введенное вами описание и прикрепленные фотографии (при наличии):",
                     value=f"**{message.content}**", inline=False
@@ -206,7 +213,7 @@ class BotEvents(commands.Cog):
                 if len_message_attachments > 0:
                     for image in message.attachments:
                         try:
-                            os.mkdir(f"cache/{message.author.name}/")  # создание папки с именем пользователя в кеше
+                            mkdir(f"cache/{message.author.name}/")  # создание папки с именем пользователя в кеше
                         except FileExistsError:
                             pass
 
@@ -214,7 +221,7 @@ class BotEvents(commands.Cog):
 
                 try:
                     picture = await utils.get_files(f"cache/{message.author.name}/")  # получение сохраненных фотографий из кеша
-                    picture = disnake.File(picture[0], filename="image_for_review.jpg")
+                    picture = File(picture[0], filename="image_for_review.jpg")
                     desc.set_image(url="attachment://image_for_review.jpg")
                 except FileNotFoundError:
                     pass

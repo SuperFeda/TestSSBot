@@ -2,7 +2,7 @@ import disnake
 
 from disnake.ext import commands
 
-from ssbot import BOT, SSBot
+from main import BOT, SSBot
 from cogs.hadlers import utils
 from cogs.hadlers.embeds import template_embeds, ordering_embeds
 from cogs.view.select_menus.service_select import ServiceSelectView
@@ -32,7 +32,7 @@ class OrderMessageButtons(disnake.ui.View):
             return await ctx.send("Процесс оформления заказов временно приостановлен.", ephemeral=True)
 
         member = BOT.get_user(ctx.author.id)
-        owner = BOT.get_user(SSBot.BOT_CONFIG["owner_id"])
+        owner = BOT.get_user(SSBot.BOT_DATA["owner_id"])
         owner_avatar = await utils.get_avatar(owner.avatar)
         file = disnake.File("images/SkylightServices_new.png", filename="ss_logo.jpg")
 

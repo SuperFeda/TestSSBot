@@ -2,7 +2,7 @@ import disnake, sqlite3
 
 from disnake.ext import commands
 
-from ssbot import SSBot
+from main import SSBot
 from cogs.hadlers import utils
 from cogs.hadlers.embeds.template_embeds import REVIEW_CHECKING_EMBED
 from cogs.systems.rate_system.send_review_button import SendReviewButton

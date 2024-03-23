@@ -2,10 +2,8 @@ import disnake, sqlite3, asyncio
 
 from disnake.ext import commands
 
-from ssbot import SSBot, BOT
+from main import SSBot, BOT
 from cogs.hadlers import utils
-from cogs.systems.rate_system.stars_button import StarsButton
-from cogs.view.buttons.enter_description_button import EnterDescriptionButton
 
 
 class SendReviewButtonReg(commands.Cog):

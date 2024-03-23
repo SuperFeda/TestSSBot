@@ -1,6 +1,6 @@
 import disnake
 
-from ssbot import SSBot
+from main import SSBot
 
 LOGOS = disnake.File("images/logos.png", filename="logos.jpg")
 

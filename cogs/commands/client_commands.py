@@ -3,7 +3,7 @@ import disnake
 from disnake.ext import commands
 from disnake import Localized
 
-from ssbot import BOT, SSBot
+from main import BOT, SSBot
 from cogs.hadlers import bot_choices, utils
 from cogs.hadlers.embeds import template_embeds
 from cogs.view.buttons.take_request import TakeRequestButton
@@ -22,7 +22,7 @@ class ClientCommands(commands.Cog):
         ]
     )
     async def send_report(self, ctx, message: str, report_type: str):
-        REPORT_CHANNEL = BOT.get_channel(BOT.BOT_CONFIG["report_channel_id"])
+        REPORT_CHANNEL = BOT.get_channel(BOT.BOT_DATA["report_channel_id"])
         avatar = utils.get_avatar(ctx.author.avatar)
 
         report_embed = disnake.Embed(title="Репорт:", color=SSBot.DEFAULT_COLOR)
@@ -110,7 +110,7 @@ class ClientCommands(commands.Cog):
     )
     async def archive(self, ctx, product_name: str, request_type: str):
         color = utils.color_archive_request(service=request_type)
-        channel = BOT.get_channel(BOT.BOT_CONFIG["request_channel_id"])
+        channel = BOT.get_channel(BOT.BOT_DATA["request_channel_id"])
         avatar = utils.get_avatar(ctx_user_avatar=ctx.author.avatar)
 
         archive_embed = disnake.Embed(title="Новый запрос:", color=color)

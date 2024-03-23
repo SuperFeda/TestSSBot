@@ -3,7 +3,7 @@ import disnake
 from disnake.ext import commands
 
 from cogs.hadlers import utils
-from ssbot import SSBot
+from main import SSBot
 
 
 class TakeRequestButtonReg(commands.Cog):
@@ -27,7 +27,7 @@ class TakeRequestButton(disnake.ui.View):
         message = await interaction.channel.fetch_message(interaction.message.id)
         client_id_from_embed = await self.for_in_embed(in_=message.embeds[0]._fields[2].items())
         product_name_from_embed = await self.for_in_embed(in_=message.embeds[0]._fields[0].items())
-        category = disnake.utils.get(interaction.guild.categories, id=SSBot.BOT_CONFIG["requests_category_id"])
+        category = disnake.utils.get(interaction.guild.categories, id=SSBot.BOT_DATA["requests_category_id"])
         client = interaction.guild.get_member(int(client_id_from_embed))
         avatar = utils.get_avatar(ctx_user_avatar=interaction.author.avatar)
 

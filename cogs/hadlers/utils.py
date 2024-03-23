@@ -1,5 +1,9 @@
-import random, os, numpy, json, disnake
+import json
 
+from disnake import Member, Embed, Color, File
+from os import remove, listdir, rmdir
+from numpy import arange
+from random import choice
 from colorama import Fore
 
 
@@ -9,7 +13,7 @@ async def var_test(variable: vars) -> None:
     :param variable: переменная
     :return: None
     """
-    print(f"{Fore.CYAN}var type: {type(variable)}\noutput: {variable}{Fore.RESET}")
+    print(f"{Fore.CYAN}var type: {type(variable)}\n{variable = }{Fore.RESET}")
 
 
 def read_json(path: str) -> dict:
@@ -68,7 +72,7 @@ async def calc_percentage(promo_code: str, price: int) -> int | None:
     :param price: цена услуги
     :return: стоимость оплаты за заказ с учетом промокода.
     """
-    from ssbot import SSBot
+    from main import SSBot
 
     promo_codes_json = await async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
     len_promo_code = len(promo_code)
@@ -106,47 +110,47 @@ async def generate_random_combination(length: int) -> str:
     :param length: длинна ID
     :return: ID заказа
     """
-    from ssbot import SSBot
+    from main import SSBot
 
-    return ''.join(random.choice(SSBot.ORDER_ID_SYMBOLS) for _ in numpy.arange(length))
+    return ''.join(choice(SSBot.ORDER_ID_SYMBOLS) for _ in arange(length))
 
 
-async def color_order(service: str) -> disnake.Color:
+async def color_order(service: str) -> Color:
     """
     Получение цвета для левой полоски Embed
     :param service: заказываемая услуга
     :return: цвет для embed
     """
-    from ssbot import SSBot
+    from main import SSBot
 
     if service in (SSBot.SKIN64, SSBot.SKIN128, SSBot.SKIN_4D):
-        return disnake.Color.blue()
+        return Color.blue()
     elif service in (SSBot.MODEL, SSBot.ANIM_MODEL, SSBot.ANIM_TEXTURE_MODEL, SSBot.TEXTURE_MODEL):
-        return disnake.Color.brand_red()
+        return Color.brand_red()
     elif service in (SSBot.CAPE, SSBot.TOTEM, SSBot.TOTEM_3D, SSBot.TEXTURE):
-        return disnake.Color.orange()
+        return Color.orange()
     elif service in (SSBot.LETTER_LOGO, SSBot.LETTER_LOGO_2):
-        return disnake.Color.blurple()
+        return Color.blurple()
     elif service in (SSBot.CHARACTERS_DESIGN):
-        return disnake.Color.dark_orange()
-    elif service in (SSBot.SPIGOT_PLUGIN, SSBot.WORLD_GENERATION, SSBot.JAVA_CODE, SSBot.JIGSAW_STRUCTURE):
-        return disnake.Color.magenta()
+        return Color.dark_orange()
+    elif service in (SSBot.WORLD_GENERATION, SSBot.JIGSAW_STRUCTURE):
+        return Color.magenta()
     else:
-        return disnake.Color.default()
+        return Color.default()
 
 
-async def color_archive_request(type: str) -> disnake.Color:
+async def color_archive_request(type: str) -> Color:
     """
     Получение цвета для левой полоски Embed
     :param type: тип запроса
     :return: цвет для embed
     """
     if type == "покупка":
-        return disnake.Color.blue()
+        return Color.blue()
     elif type == "предложение":
-        return disnake.Color.green()
+        return Color.green()
     else:
-        return disnake.Color.default()
+        return Color.default()
 
 
 async def get_files_disnake(path: str) -> list:
@@ -156,8 +160,8 @@ async def get_files_disnake(path: str) -> list:
     :return: список файлов из папки
     """
     picture_for_send = []
-    for image_for_send in os.listdir(path):
-        picture_for_send.append(disnake.File(path+f"{image_for_send}"))
+    for image_for_send in listdir(path):
+        picture_for_send.append(File(path+f"{image_for_send}"))
 
     return picture_for_send
 
@@ -169,17 +173,17 @@ async def get_files(path: str) -> list:
     :return: список файлов из папки
     """
     picture_for_send = []
-    for image_for_send in os.listdir(path):
+    for image_for_send in listdir(path):
         picture_for_send.append(path+f"{image_for_send}")
 
     return picture_for_send
 
 
-async def get_avatar(ctx_user_avatar: disnake.Member.avatar) -> disnake.Member.avatar or None:
+async def get_avatar(ctx_user_avatar: Member.avatar) -> Member.avatar or None:
     """
     Получение аватара пользователя
     :param ctx_user_avatar: аватар юзера
-    :return: получение аватара либо None, если аватара нету
+    :return: получение аватара либо None, если аватара нет
     """
     if not ctx_user_avatar:
         avatar = None
@@ -198,7 +202,7 @@ async def star_count_conv(count: int) -> str:
     return "🌟"*count
 
 
-def create_embed(title: str, color: disnake.Color, content: str) -> disnake.Embed:
+def create_embed(title: str, color: Color, content: str) -> Embed:
     """
     Создание Embed по определенному шаблону
     :param title: Заголовок Embed
@@ -206,7 +210,7 @@ def create_embed(title: str, color: disnake.Color, content: str) -> disnake.Embe
     :param content: Содержимое Embed (256 символов макс.)
     :return: Embed
     """
-    embed = disnake.Embed(title=title, color=color)
+    embed = Embed(title=title, color=color)
     embed.add_field(name=content, value="")
 
     return embed
@@ -218,9 +222,9 @@ async def delete_files_from_cache(author_name) -> None:
     :param author_name: name автора
     :return: None
     """
-    for file in os.listdir(f"cache/{author_name}/"):
-        os.remove(f"cache/{author_name}/{file}")
-    os.rmdir(f"cache/{author_name}")
+    for file in listdir(f"cache/{author_name}/"):
+        remove(f"cache/{author_name}/{file}")
+    rmdir(f"cache/{author_name}")
 
 
 async def convert_value_to_service_name(value: str) -> str:
@@ -230,7 +234,7 @@ async def convert_value_to_service_name(value: str) -> str:
     :param value: Ключ по которому будет производиться конвертация.
     :return: Конвертированное название.
     """
-    from ssbot import SSBot
+    from main import SSBot
 
     match value:
         case "skin64":

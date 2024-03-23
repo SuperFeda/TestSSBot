@@ -1,6 +1,6 @@
 import disnake
 
-from ssbot import SSBot
+from main import SSBot
 from cogs.hadlers.utils import create_embed
 
 
@@ -8,9 +8,9 @@ WARN_MANY_IMAGES_EMBED = create_embed(title="Слишком много изоб�
 WARN_MANY_IMAGES_FOR_REVIEW_EMBED = create_embed(title="Слишком много изображений", color=disnake.Color.red(), content="Отправить можно максимум **одно** изображение.")
 WARN_LONG_DESC_EMBED = create_embed(title="Слишком длинное описание", color=disnake.Color.red(),  content="Описание должно вмещать в себя до **1020** символов.")
 WARN_SHORT_DESC_EMBED = create_embed(title="Слишком короткое описание", color=disnake.Color.red(), content="Описание должно быть длинне **10** символов.")
-FEEDBACK_EMBED = create_embed(title="Отзывы", color=SSBot.DEFAULT_COLOR, content=f'**Отзывы** можно посмотреть здесь: <#{SSBot.BOT_CONFIG["feedback_channel_id"]}>')
-PS_EMBED = create_embed(title="Пользовательское соглашение", color=SSBot.DEFAULT_COLOR, content=f'**Пользовательское соглашение** можно прочитать здесь: <#{SSBot.BOT_CONFIG["user_agreement_channel_id"]}>')
-ADDITIONAL_WORK_EXAMPLES = create_embed(title="Дополнительные примеры работ", color=SSBot.DEFAULT_COLOR, content=f'**Дополнительные примеры работ** можно посмотреть здесь: <#{SSBot.BOT_CONFIG["additional_examples_channel_id"]}>')
+FEEDBACK_EMBED = create_embed(title="Отзывы", color=SSBot.DEFAULT_COLOR, content=f'**Отзывы** можно посмотреть здесь: <#{SSBot.BOT_DATA["feedback_channel_id"]}>')
+PS_EMBED = create_embed(title="Пользовательское соглашение", color=SSBot.DEFAULT_COLOR, content=f'**Пользовательское соглашение** можно прочитать здесь: <#{SSBot.BOT_DATA["user_agreement_channel_id"]}>')
+ADDITIONAL_WORK_EXAMPLES = create_embed(title="Дополнительные примеры работ", color=SSBot.DEFAULT_COLOR, content=f'**Дополнительные примеры работ** можно посмотреть здесь: <#{SSBot.BOT_DATA["additional_examples_channel_id"]}>')
 WARN_ACTIVATED_PROMO_CODE_AVAILABLE_EMBED = create_embed(title="Промокод не активирован", color=disnake.Color.red(), content="У вас уже есть активированный промокод.")
 WARN_PROMO_CODE_WAS_PREVIOUSLY_ENTERED_EMBED = create_embed(title="Промокод недействителен", color=disnake.Color.red(), content="Данный промокод уже был введён ранее на вашем аккаунте.")
 WARN_USER_NOT_IN_LIST = create_embed(title="Промокод недействителен", color=disnake.Color.red(), content="Вы не можете активировать этот промокод потому что вас не в списке пользователей, которым он доступен.")

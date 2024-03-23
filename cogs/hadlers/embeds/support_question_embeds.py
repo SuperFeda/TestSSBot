@@ -1,6 +1,6 @@
 import disnake
 
-from ssbot import SSBot
+from main import SSBot
 
 BOT_ERROR_IMG = disnake.File("images/bot_error.png", filename="bot_error.png")
 ADD_CONTACTS_MENU_IMG = disnake.File("images/add_contacts_menu.png", filename="add_contacts_menu.jpg")
@@ -11,7 +11,7 @@ SUPPORT_EMBED = disnake.Embed(title="Поддержка", color=disnake.Color.bl
 
 HOW_ORDER_EMBED = disnake.Embed(
     title="Как оформить заказ?", color=SSBot.DEFAULT_COLOR,
-    description=f'Оформить заказ можно перейдя в канал <#{SSBot.BOT_CONFIG["order_channel_id"]}> и нажав на кнопку \"Оформить заказ\".'
+    description=f'Оформить заказ можно перейдя в канал <#{SSBot.BOT_DATA["order_channel_id"]}> и нажав на кнопку \"Оформить заказ\".'
 )
 
 EDITS_EMBED = disnake.Embed(

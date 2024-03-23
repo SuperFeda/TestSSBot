@@ -2,7 +2,7 @@ import disnake, sqlite3
 
 from disnake.ext import commands
 
-from ssbot import SSBot, BOT
+from main import SSBot
 from cogs.hadlers import utils
 from cogs.view.buttons.enter_description_button import EnterDescriptionButton
 
