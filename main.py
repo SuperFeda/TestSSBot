@@ -1,10 +1,9 @@
 from disnake import Intents, Color
-from disnake.ext import commands
-from sqlite3 import connect
+from disnake.ext.commands import Bot
+from sqlite3 import connect, Cursor
 from os import listdir, environ
 
 from cogs.hadlers.utils import read_json
-
 
 #####################################
 #                                   #
@@ -19,39 +18,43 @@ from cogs.hadlers.utils import read_json
 #####################################
 
 
-class SSBot(commands.Bot):  # main класс бота
-    BOT_CONFIG = read_json("./data/bot_config.json")
-    BOT_DATA = read_json("./data/bot_data.json")
-    PATH_TO_CLIENT_DB = "data/skylightbot_client_base.db"
-    PATH_TO_WORKER_DB = "data/skylightbot_worker_base.db"
-    PATH_TO_PROMO_CODES_DATA = "data/promo_codes.json"
-    PATH_TO_CODES = "data/codes.json"
-    PATH_TO_BOT_LOGS = "data/ssbot_logs.log"
-    ORDER_ID_SYMBOLS = "1234567890AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
-    DEFAULT_COLOR = Color.from_rgb(r=43, g=45, b=49)
-    DONATION_ALERTS_COLOR = Color.from_rgb(r=233, g=121, b=13)
-    SKIN64 = "Скин 64x64"
-    SKIN128 = "Скин 128x128"
-    SKIN_4D = "4D скин"
-    MODEL = "Модель"
-    ANIM_MODEL = "Модель + анимация"
-    TEXTURE_MODEL = "Модель + текстура"
-    ANIM_TEXTURE_MODEL = "Модель + анимация + текстура"
-    CAPE = "Плащ"
-    CAPE_4D = "4D плащ"
-    TOTEM = "Тотем"
-    TOTEM_3D = "3D тотем"
-    TEXTURE = "Текстура блока/предмета"
-    LETTER_LOGO = "Буквенный логотип"
-    LETTER_LOGO_2 = "Логотип с кастомными буквами/доп. деталями"
-    ANIM_LETTER_LOGO = "Анимированный буквенный логотип"
-    BLENDER_RENDER = "Обработка в Blender"
-    CHARACTERS_DESIGN = "Дизайн персонажей"
-    WORLD_GENERATION = "Генерация мира"
-    JIGSAW_STRUCTURE = "Jigsaw структура"
-    STRUCTURE = "Постройка"
-    PREMIUM_PROMO_CODE = "Премиумный промокод"
-    NOT_STATIC_PRICE = (MODEL, ANIM_MODEL, TEXTURE_MODEL, ANIM_TEXTURE_MODEL, LETTER_LOGO_2, STRUCTURE, JIGSAW_STRUCTURE, WORLD_GENERATION, PREMIUM_PROMO_CODE)
+class SSBot(Bot):  # main класс бота
+    BOT_CONFIG: dict = read_json("./data/bot_config.json")
+    BOT_DATA: dict = read_json("./data/bot_data.json")
+    PATH_TO_CLIENT_DB: str = "data/skylightbot_client_base.db"
+    CLIENT_DB_CONNECTION: connect = connect(PATH_TO_CLIENT_DB)
+    CLIENT_DB_CURSOR: Cursor = CLIENT_DB_CONNECTION.cursor()
+    PATH_TO_WORKER_DB: str = "data/skylightbot_worker_base.db"
+    WORKER_DB_CONNECTION: connect = connect(PATH_TO_WORKER_DB)
+    WORKER_DB_CURSOR: Cursor = WORKER_DB_CONNECTION.cursor()
+    PATH_TO_PROMO_CODES_DATA: str = "data/promo_codes.json"
+    PATH_TO_CODES: str = "data/codes.json"
+    PATH_TO_BOT_LOGS: str = "data/ssbot_logs.log"
+    ORDER_ID_SYMBOLS: str = "1234567890AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
+    DEFAULT_COLOR: Color = Color.from_rgb(r=43, g=45, b=49)
+    DONATION_ALERTS_COLOR: Color = Color.from_rgb(r=233, g=121, b=13)
+    SKIN64: str = "Скин 64x64"
+    SKIN128: str = "Скин 128x128"
+    SKIN_4D: str = "4D скин"
+    MODEL: str = "Модель"
+    ANIM_MODEL: str = "Модель + анимация"
+    TEXTURE_MODEL: str = "Модель + текстура"
+    ANIM_TEXTURE_MODEL: str = "Модель + анимация + текстура"
+    CAPE: str = "Плащ"
+    CAPE_4D: str = "4D плащ"
+    TOTEM: str = "Тотем"
+    TOTEM_3D: str = "3D тотем"
+    TEXTURE: str = "Текстура блока/предмета"
+    LETTER_LOGO: str = "Буквенный логотип"
+    LETTER_LOGO_2: str = "Логотип с кастомными буквами/доп. деталями"
+    ANIM_LETTER_LOGO: str = "Анимированный буквенный логотип"
+    BLENDER_RENDER: str = "Обработка в Blender"
+    CHARACTERS_DESIGN: str = "Дизайн персонажей"
+    WORLD_GENERATION: str = "Генерация мира"
+    JIGSAW_STRUCTURE: str = "Jigsaw структура"
+    STRUCTURE: str = "Постройка"
+    SERVICE_PROMO_CODE: str = "Промокод на услугу"
+    NOT_STATIC_PRICE: tuple = (MODEL, ANIM_MODEL, TEXTURE_MODEL, ANIM_TEXTURE_MODEL, LETTER_LOGO_2, STRUCTURE, JIGSAW_STRUCTURE, WORLD_GENERATION, SERVICE_PROMO_CODE)
 
     def __init__(self):
         super().__init__(
@@ -92,9 +95,7 @@ def load_cogs():  # def для загрузки когов бота
     BOT.load_extension("cogs.events")  # load bot events
 
 
-connection = connect('./data/skylightbot_worker_base.db')
-cursor = connection.cursor()
-cursor.execute("""
+SSBot.WORKER_DB_CURSOR.execute("""
     CREATE TABLE IF NOT EXISTS settings (
         user_id INTEGER PRIMARY KEY,
         worker_salary,
@@ -104,9 +105,7 @@ cursor.execute("""
     )
 """)
 
-connection_ = connect('./data/skylightbot_client_base.db')
-cursor_ = connection_.cursor()
-cursor_.execute("""
+SSBot.CLIENT_DB_CURSOR.execute("""
     CREATE TABLE IF NOT EXISTS settings (
         user_id INTEGER PRIMARY KEY,
         client_name,

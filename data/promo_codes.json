@@ -1,24 +1,23 @@
 {
-    "common_code": {
-        "SSOpenCode": {
-            "discount_rate": 35,
-            "count_for_use": 249
-        },
-        "AlikGaming": {
-            "discount_rate": 0
-        },
-        "ExcluvCode": {
-            "discount_rate": 75,
-            "count_for_use": 1,
-            "users": [
-                294814616482086912
-            ]
-        }
+    "SSOpenCode": {
+        "type": "common_code",
+        "discount_rate": 35,
+        "count_for_use": 250
     },
-    "youtube_code": {},
-    "service_code": {
-        "OptFineFreeCape": {
-            "service": "cape"
-        }
+    "AlikGaming": {
+        "type": "common_code",
+        "discount_rate": 0
+    },
+    "ExcluvCode": {
+        "type": "common_code",
+        "discount_rate": 75,
+        "count_for_use": 1,
+        "users": [
+            294814616482086912
+        ]
+    },
+    "OptiFineFreeCape": {
+        "type": "service_code",
+        "service": "cape"
     }
 }
