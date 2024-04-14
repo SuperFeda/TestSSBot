@@ -9,7 +9,6 @@ from cogs.hadlers.embeds import template_embeds
 
 
 class OwnerCommands(commands.Cog):
-
     def __init__(self, client):
         self.client = client
 
@@ -125,51 +124,61 @@ class OwnerCommands(commands.Cog):
         await ctx.channel.purge()
 
     @commands.slash_command(name="add_promo_code")
-    async def add_promo_code(self, ctx, promo_code_name: str, discount_rate: int, count: int | None = None, pc_type: str = commands.Param(choices=bot_choices.CHOICE_FOR_PC_TYPE)):
+    async def add_promo_code(
+            self, ctx, promo_code_name: str, discount_rate: int, service: str | None = None, count: int | None = None,
+            count_for_use: int | None = None, date: str | None = commands.Param(default=None, description="Format: day.month.year"),
+            pc_type: str = commands.Param(choices=bot_choices.CHOICE_FOR_PC_TYPE)
+    ):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         pc_data = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
 
+        if promo_code_name in pc_data:
+            return await ctx.send(f"Промокод **{promo_code_name}** уже есть в базе данных.", ephemeral=True)
+
         if pc_type == "common_code":
-            if len(promo_code_name) != 10:
-                return await ctx.send("Промокод для категории \"common_code\" должен иметь длину в 10 символов!", ephemeral=True)
             if discount_rate > 99:
                 return await ctx.send("`discount_rate` должен быть не больше 99%!", ephemeral=True)
             if count is not None:
-                return await ctx.send("Промокоды категории \"common_code\" не поддерживают count!", ephemeral=True)
-            if promo_code_name in pc_data["common_code"]:
-                return await ctx.send(f"Промокод **{promo_code_name}** уже есть в базе данных.", ephemeral=True)
+                return await ctx.send("Промокоды категории \"`common_code`\" не поддерживают count!", ephemeral=True)
 
-            pc_data["common_code"].update({promo_code_name: {"discount_rate": discount_rate}})
+            pc_data.update({promo_code_name: {"discount_rate": discount_rate, "type": pc_type}})
 
-        elif pc_type == "youtube_code":
-            if len(promo_code_name) != 17:
-                return await ctx.send("Промокод для категории \"youtube_code\" должен иметь длину в 17 символов!", ephemeral=True)
+        elif pc_type == "premium_code":
             if count is None:
-                return await ctx.send("Для промокода типа \"youtube_code\" параметр \"count\" - обязателен!", ephemeral=True)
+                return await ctx.send("Для промокода типа \"`premium_code`\" параметр \"`count`\" - обязателен!", ephemeral=True)
             if count < 2:
                 return await ctx.send("count должен иметь значение не меньше 2!", ephemeral=True)
-            if discount_rate > 99:
-                return await ctx.send("discount_rate должен быть не больше 99%!", ephemeral=True)
-            if promo_code_name in pc_data["youtube_code"]:
-                return await ctx.send(f"Промокод **{promo_code_name}** уже есть в базе данных.", ephemeral=True)
+            if discount_rate > 40:
+                return await ctx.send("`discount_rate` должен быть не больше 40%!", ephemeral=True)
 
-            pc_data["youtube_code"].update({promo_code_name: {"discount_rate": discount_rate, "count": count-1}})
+            pc_data.update({promo_code_name: {"discount_rate": discount_rate, "count": count-1, "type": pc_type}})
+
+        elif pc_type == "service_code":
+            if service is None:
+                return await ctx.send("Для промокода типа \"`service_code`\" параметр \"`service`\" - обязателен!", ephemeral=True)
+
+            pc_data.update({promo_code_name: {"service": service, "type": pc_type}})
+
+        if date is not None:
+            pc_data[promo_code_name].update({"time": date.replace(" ", "")})
+        if count_for_use is not None:
+            pc_data[promo_code_name].update({"count_for_use": count_for_use})
 
         await utils.write_json(path=SSBot.PATH_TO_PROMO_CODES_DATA, data=pc_data)
 
-        embed = utils.create_embed(title="Промокод добавлен", color=disnake.Color.blurple(), content=f"Промокод **{promo_code_name}** добавлен в базу данных в категорию \"{pc_type}\".")
+        embed = utils.create_embed(title="Промокод добавлен", color=disnake.Color.blurple(), content=f"Промокод **{promo_code_name}** добавлен в базу данных в категорию \"{pc_type}\".\nКод: ```{pc_data[promo_code_name]}```")
 
         await ctx.send(embed=embed, ephemeral=True)
 
     @commands.slash_command(name="remove_promo_code")
-    async def remove_promo_code(self, ctx, promo_code_name: str, pc_type: str = commands.Param(choices=bot_choices.CHOICE_FOR_PC_TYPE)):
+    async def remove_promo_code(self, ctx, promo_code_name: str):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         pc_data = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
-        pc_data[pc_type].pop(promo_code_name)
+        pc_data.pop(promo_code_name)
         await utils.write_json(path=SSBot.PATH_TO_PROMO_CODES_DATA, data=pc_data)
 
         embed = utils.create_embed(title="Промокод удален", color=disnake.Color.red(), content=f"Промокод {promo_code_name} удален из базы данных.")
@@ -177,19 +186,19 @@ class OwnerCommands(commands.Cog):
         await ctx.send(embed=embed, ephemeral=True)
 
     @commands.slash_command(name="stop_take_order")
-    async def stop_take_order(self, ctx, true_false: bool = commands.Param(choices=bot_choices.CHOICE_FOR_SURE)):
+    async def stop_take_order(self, ctx, true_or_false: bool = commands.Param(choices=bot_choices.CHOICE_FOR_SURE)):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        SSBot.BOT_CONFIG["bot_can_take_order"] = true_false
+        SSBot.BOT_CONFIG["bot_can_take_order"] = true_or_false
 
         color = None
-        if true_false is True:
+        if true_or_false is True:
             color = disnake.Color.blurple()
-        elif true_false is False:
+        elif true_or_false is False:
             color = disnake.Color.red()
 
-        embed = utils.create_embed(title="bot_can_take_order изменен", color=color, content=f"bot_can_take_order изменен на `{true_false}`.")
+        embed = utils.create_embed(title="bot_can_take_order изменен", color=color, content=f"`bot_can_take_order` изменен на `{true_or_false}`.")
 
         await ctx.send(embed=embed, ephemeral=True)
 

@@ -25,9 +25,9 @@ class TakeQuestionButton(disnake.ui.View):
     async def take_question(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
         SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
         message = await interaction.channel.fetch_message(interaction.message.id)
-        client_id_from_embed = await self.for_in_embed(in_=message.embeds[0]._fields[1].items())
+        client_id_from_embed = await self.__get_value_from_embed(data=message.embeds[0]._fields[1])
         client = interaction.guild.get_member(int(client_id_from_embed))
-        avatar = utils.get_avatar(ctx_user_avatar=interaction.author.avatar)
+        avatar = await utils.get_avatar(ctx_user_avatar=interaction.author.avatar)
 
         embed = message.embeds[0]
         embed.set_footer(
@@ -43,14 +43,14 @@ class TakeQuestionButton(disnake.ui.View):
 
         await thread.send(f"<@{interaction.author.id}> <@{client.id}>")
 
-    async def for_in_embed(self, in_):
-        data = None
-        for key_, value_ in in_:
-            if key_ == "value":
-                data = value_
-                break
+    async def __get_value_from_embed(self, data: dict) -> str:
+        """
+        Получение определенного значения из Embed
+        :param data: данные из которых нужно вытащить значение
+        :return: значение
+        """
+        return data["value"]
 
-        return data
 
 def setup(client):
     client.add_cog(TakeQuestionButtonReg(client))

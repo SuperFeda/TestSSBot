@@ -1,16 +1,15 @@
-import disnake
-
+from disnake import Embed, File
 from main import SSBot
 
-LOGOS = disnake.File("images/logos.png", filename="logos.jpg")
+LOGOS = File("images/logos.png", filename="logos.jpg")
 
-SKIN_QUESTION_EMBED = disnake.Embed(
+SKIN_QUESTION_EMBED = Embed(
     title="Дополнительные вопросы",
     color=SSBot.DEFAULT_COLOR,
     description="Для того чтобы мы выполнили ваш заказа так, как хотите вы, нам нужно знать ещё кое-какую информацию. Пожалуйста, ответьте на вопросы ниже:"
 ).add_field(name="1) Ваш скин должен иметь стандартные руки или тонкие?", value="", inline=False)
 
-TOTEM_QUESTION_EMBED = disnake.Embed(
+TOTEM_QUESTION_EMBED = Embed(
     title="Дополнительные вопросы",
     color=SSBot.DEFAULT_COLOR,
     description="Для того чтобы мы выполнили ваш заказа так, как хотите вы, нам нужно знать ещё кое-какую информацию. Пожалуйста, ответьте на вопросы ниже:"
@@ -20,13 +19,13 @@ TOTEM_QUESTION_EMBED = disnake.Embed(
     inline=False
 )
 
-LOGO_QUESTION_EMBED = disnake.Embed(
+LOGO_QUESTION_EMBED = Embed(
     title="Дополнительные вопросы",
     color=SSBot.DEFAULT_COLOR,
     description="Для того чтобы мы выполнили ваш заказа так, как хотите вы, нам нужно знать ещё кое-какую информацию. Пожалуйста, ответьте на вопросы ниже:"
 ).add_field(name="1) В логотипе должны быть пробелы между словами?", value="", inline=False).set_image(url="attachment://logos.jpg")
 
-CHARACTERS_QUESTION_EMBED = disnake.Embed(
+CHARACTERS_QUESTION_EMBED = Embed(
     title="Дополнительные вопросы",
     color=SSBot.DEFAULT_COLOR,
     description="Для того чтобы мы выполнили ваш заказа так, как хотите вы, нам нужно знать ещё кое-какую информацию. Пожалуйста, ответьте на вопросы ниже:"

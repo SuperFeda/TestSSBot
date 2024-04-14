@@ -6,8 +6,9 @@ CHOICE_FOR_SURE = [
 ]
 
 CHOICE_FOR_PC_TYPE = [
-    OptionChoice(name="Premium code", value="youtube_code"),
-    OptionChoice(name="Common code", value="common_code")
+    OptionChoice(name="Premium code", value="premium_code"),
+    OptionChoice(name="Common code", value="common_code"),
+    OptionChoice(name="Service code", value="service_code")
 ]
 
 CHOICE_FOR_REPORT_TYPE = [

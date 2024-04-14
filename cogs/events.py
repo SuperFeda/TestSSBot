@@ -1,14 +1,16 @@
 from disnake import DMChannel, ChannelType, errors, Embed, Color, File, Message
 from disnake.ext import commands
-from sqlite3 import connect
 from os import listdir, mkdir
 from colorama import Fore
 
 from main import BOT, SSBot
 from cogs.hadlers import utils
-from cogs.hadlers.embeds import ordering_embeds, template_embeds, support_question_embeds
+from cogs.hadlers.embeds.template_embeds import WARN_MANY_IMAGES_EMBED, WARN_LONG_DESC_EMBED, WARN_SHORT_DESC_EMBED, BANNED_FILE_EMBED, WARN_MANY_IMAGES_FOR_REVIEW_EMBED
+from cogs.hadlers.embeds.ordering_embeds import START_ORDERING_EMBED, SS_LOGO, WARNING_MESSAGE_EMBED
+from cogs.hadlers.embeds.support_question_embeds import SUPPORT_EMBED
 from cogs.view.select_menus.question_select import QuestionSelectView
 from cogs.view.buttons.order_message_buttons import OrderMessageButtons
+from cogs.view.buttons.service_promo_code_button import ServicePromoCodeButton
 from cogs.view.buttons.continue_and_adtcon_buttons import ContinueAndAdtConButtons
 from cogs.view.buttons.write_description_again_button import EnterDescriptionAgainButton
 from cogs.systems.rate_system.continue_button_for_review import ContinueButtonForReview
@@ -26,8 +28,18 @@ class BotEvents(commands.Cog):
         ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["order_channel_id"])
         SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
 
-        await SUPPORT_CHANNEL.send(embed=support_question_embeds.SUPPORT_EMBED, view=QuestionSelectView(self.client))
-        await ORDER_CHANNEL.send(embed=ordering_embeds.START_ORDERING_EMBED, file=ordering_embeds.SS_LOGO, view=OrderMessageButtons(self.client))
+        components = [
+            OrderMessageButtons(self.client).order_button,
+            ServicePromoCodeButton(self.client).promo_code_button,
+            OrderMessageButtons(self.client).reviews_button,
+            OrderMessageButtons(self.client).leave_review_button,
+            OrderMessageButtons(self.client).support_button,
+            OrderMessageButtons(self.client).ps_button,
+            OrderMessageButtons(self.client).work_examples_button
+        ]
+
+        await SUPPORT_CHANNEL.send(embed=SUPPORT_EMBED, view=QuestionSelectView(self.client))
+        await ORDER_CHANNEL.send(embed=START_ORDERING_EMBED, file=SS_LOGO, components=components)
 
     # @commands.Cog.listener()
     # async def on_member_join(self, message):
@@ -37,12 +49,9 @@ class BotEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        connection = connect(SSBot.PATH_TO_CLIENT_DB)
-        cursor = connection.cursor()
-        cursor.execute("SELECT can_description FROM settings WHERE user_id=?", (message.author.id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT can_description FROM settings WHERE user_id=?", (message.author.id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         can_description_var = result[0] if result else None
-        connection.close()
 
         if message.channel.type is ChannelType.private_thread and message.author.name in message.channel.name:
             def is_not_bot(m):
@@ -60,7 +69,7 @@ class BotEvents(commands.Cog):
 
         LOG_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["log_channel_id"])
 
-        if message.author != BOT.user:                                        # отправка сообщений от всех пользователей в LOG_CHANNEL, если id канала, где
+        if message.author != BOT.user:                                      # отправка сообщений от всех пользователей в LOG_CHANNEL, если id канала, где
             if message.channel.id in SSBot.BOT_DATA["banned_channels_id"]:  # было опубликованно сообщение не находится в banned_channels и автор сообщения не SSBot
                 return
             avatar = await utils.get_avatar(ctx_user_avatar=message.author.avatar)
@@ -75,41 +84,35 @@ class BotEvents(commands.Cog):
 
         await BOT.process_commands(message)
 
-    def load_can_description_var(self, user_id) -> None:
-        connection_ = connect(SSBot.PATH_TO_CLIENT_DB)
-        cursor_ = connection_.cursor()
-        cursor_.execute(
+    def __set_can_description_to_false(self, user_id) -> None:
+        SSBot.CLIENT_DB_CURSOR.execute(
             "INSERT INTO settings (user_id, can_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET can_description=?",
             (user_id, False, False)
         )
-        connection_.commit()
-        connection_.close()
+        SSBot.CLIENT_DB_CONNECTION.commit()
 
     async def order_path(self, message) -> None | Message:
         len_message_content = len(message.content)
         len_message_attachments = len(message.attachments)
 
         if len_message_attachments > 10:
-            self.load_can_description_var(user_id=message.author.id)
-            return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=template_embeds.WARN_MANY_IMAGES_EMBED)
+            self.__set_can_description_to_false(user_id=message.author.id)
+            return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=WARN_MANY_IMAGES_EMBED)
         if len_message_content > 1020:
-            self.load_can_description_var(user_id=message.author.id)
-            return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=template_embeds.WARN_LONG_DESC_EMBED)
+            self.__set_can_description_to_false(user_id=message.author.id)
+            return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=WARN_LONG_DESC_EMBED)
         if len_message_content < 10:
-            self.load_can_description_var(user_id=message.author.id)
-            return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=template_embeds.WARN_SHORT_DESC_EMBED)
+            self.__set_can_description_to_false(user_id=message.author.id)
+            return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=WARN_SHORT_DESC_EMBED)
 
         pictures = None
         embed_for_send = []
 
-        connection_ = connect(SSBot.PATH_TO_CLIENT_DB)
-        cursor_ = connection_.cursor()
-        cursor_.execute(
+        SSBot.CLIENT_DB_CURSOR.execute(
             "INSERT INTO settings (user_id, service_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET service_description=?",
             (message.author.id, message.content, message.content)
         )
-        connection_.commit()
-        connection_.close()
+        SSBot.CLIENT_DB_CONNECTION.commit()
 
         async with message.channel.typing():
             if message.author.name in listdir("cache/"):  # если папка с именем пользователя уже есть в папке с кешем, то удалить ее и ее содержимое
@@ -148,14 +151,14 @@ class BotEvents(commands.Cog):
                     )
                     embed_for_send.append(banned_files_embed)
 
-                embed_for_send.append(ordering_embeds.WARNING_MESSAGE_EMBED)
+                embed_for_send.append(WARNING_MESSAGE_EMBED)
 
                 try:
                     pictures = await utils.get_files_disnake(f"cache/{message.author.name}/")  # получение сохраненных фотографий из кеша
                 except FileNotFoundError:
                     pass
 
-        self.load_can_description_var(user_id=message.author.id)
+        self.__set_can_description_to_false(user_id=message.author.id)
 
         components_list = [
             EnterDescriptionAgainButton(self.client).enter_desc_button,
@@ -171,30 +174,27 @@ class BotEvents(commands.Cog):
             len_message_attachments = len(message.attachments)
 
             if len_message_attachments > 1:
-                self.load_can_description_var(user_id=message.author.id)
-                return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=template_embeds.WARN_MANY_IMAGES_FOR_REVIEW_EMBED)
+                self.__set_can_description_to_false(user_id=message.author.id)
+                return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=WARN_MANY_IMAGES_FOR_REVIEW_EMBED)
             if len_message_content > 1020:
-                self.load_can_description_var(user_id=message.author.id)
-                return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=template_embeds.WARN_LONG_DESC_EMBED)
+                self.__set_can_description_to_false(user_id=message.author.id)
+                return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=WARN_LONG_DESC_EMBED)
             if len_message_content < 10:
-                self.load_can_description_var(user_id=message.author.id)
-                return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=template_embeds.WARN_SHORT_DESC_EMBED)
+                self.__set_can_description_to_false(user_id=message.author.id)
+                return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=WARN_SHORT_DESC_EMBED)
             if len_message_attachments > 0:
                 img_fln = message.attachments[0].filename[-5:]
                 if ".png" not in img_fln and ".jpeg" not in img_fln and ".gif" not in img_fln and ".jpg" not in img_fln:
-                    self.load_can_description_var(user_id=message.author.id)
-                    return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=template_embeds.BANNED_FILE_EMBED)
+                    self.__set_can_description_to_false(user_id=message.author.id)
+                    return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=BANNED_FILE_EMBED)
 
             picture = None
 
-            connection_ = connect(SSBot.PATH_TO_CLIENT_DB)
-            cursor_ = connection_.cursor()
-            cursor_.execute(
+            SSBot.CLIENT_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, service_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET service_description=?",
                 (message.author.id, message.content, message.content)
             )
-            connection_.commit()
-            connection_.close()
+            SSBot.CLIENT_DB_CONNECTION.commit()
 
             async with message.channel.typing():
                 if message.author.name in listdir("cache/"):  # если папка с именем пользователя уже есть в папке с кешем, то удалить ее и ее содержимое
@@ -226,7 +226,7 @@ class BotEvents(commands.Cog):
                 except FileNotFoundError:
                     pass
 
-            self.load_can_description_var(user_id=message.author.id)
+            self.__set_can_description_to_false(user_id=message.author.id)
 
             components_list = [
                 EnterDescriptionAgainButton(self.client).enter_desc_button,

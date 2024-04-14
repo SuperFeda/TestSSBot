@@ -47,7 +47,7 @@ async def write_json(path: str, data: dict) -> None:
         json.dump(data, json_file, indent=4, ensure_ascii=False)
 
 
-async def string_to_list(string: str) -> list:
+async def string_to_list(string: str) -> list[str]:
     """
     Конвертирование строки "123456789,FFFFFFFFF,AAAAAAAAA," в список ['23456789', 'FFFFFFFFF', 'AAAAAAAAA'].
     Используется для проверки: находится ли промокод в списке введенных пользователем.
@@ -74,15 +74,16 @@ async def calc_percentage(promo_code: str, price: int) -> int | None:
     """
     from main import SSBot
 
-    promo_codes_json = await async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
-    len_promo_code = len(promo_code)
+    promo_codes_data = await async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
 
-    if len_promo_code == 10:
-        return price - (price * promo_codes_json["common_code"][promo_code]["discount_rate"] / 100)
-    elif len_promo_code == 17:
-        return price - (price * promo_codes_json["youtube_code"][promo_code]["discount_rate"] / 100)
-    else:
-        return print(f"{Fore.RED}[ERR]{Fore.RESET} Error in calc_percentage def")
+    return price - (price * promo_codes_data[promo_code]["discount_rate"] / 100)
+
+    # if len_promo_code == 10:
+    #     return price - (price * promo_codes_json["common_code"][promo_code]["discount_rate"] / 100)
+    # elif len_promo_code == 17:
+    #     return price - (price * promo_codes_json["youtube_code"][promo_code]["discount_rate"] / 100)
+    # else:
+    #     return print(f"{Fore.RED}[ERR]{Fore.RESET} Error in calc_percentage def")
 
 
 async def get_promocode_type(promocode_name: str) -> str:
@@ -91,17 +92,11 @@ async def get_promocode_type(promocode_name: str) -> str:
     :param promocode_name: имя промокода
     :return: тип промокода
     """
-    len_pmn = len(promocode_name)
-    type_ = None
+    from main import SSBot
 
-    if len_pmn == 10:
-        type_ = "common_code"
-    elif len_pmn == 15:
-        type_ = "service_code"
-    elif len_pmn == 17:
-        type_ = "youtube_code"
+    promo_codes_data = await async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
 
-    return type_
+    return promo_codes_data[promocode_name]["type"]
 
 
 async def generate_random_combination(length: int) -> str:
@@ -153,7 +148,7 @@ async def color_archive_request(type: str) -> Color:
         return Color.default()
 
 
-async def get_files_disnake(path: str) -> list:
+async def get_files_disnake(path: str) -> list[File]:
     """
     Получение файлов из папки
     :param path: путь к папке
@@ -181,14 +176,14 @@ async def get_files(path: str) -> list:
 
 async def get_avatar(ctx_user_avatar: Member.avatar) -> Member.avatar or None:
     """
-    Получение аватара пользователя
+    Получение аватара пользователя Discord
     :param ctx_user_avatar: аватар юзера
     :return: получение аватара либо None, если аватара нет
     """
     if not ctx_user_avatar:
         avatar = None
     else:
-        avatar = ctx_user_avatar.url
+        avatar = ctx_user_avatar
 
     return avatar
 
@@ -273,5 +268,7 @@ async def convert_value_to_service_name(value: str) -> str:
             return SSBot.STRUCTURE
         case "jigsaw_structure":
             return SSBot.JIGSAW_STRUCTURE
+        case "service_promo":
+            return SSBot.SERVICE_PROMO_CODE
 
 

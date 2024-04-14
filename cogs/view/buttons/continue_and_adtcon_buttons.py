@@ -26,61 +26,57 @@ class ContinueAndAdtConButtons(disnake.ui.View):
 
     @disnake.ui.button(label="Продолжить", style=disnake.ButtonStyle.green, custom_id="continue_button")
     async def continue_button(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
-        connection = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
-        cursor = connection.cursor()
         user_id = interaction.author.id
 
         # find client name
-        cursor.execute("SELECT client_name FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT client_name FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_client_name = result[0] if result else None
 
         # find client avatar
-        cursor.execute("SELECT client_avatar FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT client_avatar FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_client_avatar = result[0] if result else None
 
         # find client display name
-        cursor.execute("SELECT client_display_name FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT client_display_name FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_client_display_name = result[0] if result else None
 
         # find service type
-        cursor.execute("SELECT service_type FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT service_type FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_service_type = result[0] if result else None
 
         # find service description
-        cursor.execute("SELECT service_description FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT service_description FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_service_description = result[0] if result else None
 
         # find service code
-        cursor.execute("SELECT service_code FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT service_code FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_service_code = result[0] if result else None
 
         # find sending time
-        cursor.execute("SELECT sending_time FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT sending_time FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_sending_time = result[0] if result else None
 
         # find vk
-        cursor.execute("SELECT vk_url FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT vk_url FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_vk_url = result[0] if result else None
 
         # find mail
-        cursor.execute("SELECT mail FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT mail FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_mail = result[0] if result else None
 
         # find telegram url
-        cursor.execute("SELECT telegram_url FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT telegram_url FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_telegram_url = result[0] if result else None
-
-        connection.close()
 
         color = await utils.color_order(var_service_type)  # получение цвета для embed
 

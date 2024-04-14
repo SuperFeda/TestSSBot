@@ -4,7 +4,6 @@ from disnake import Embed, SelectOption
 from disnake.ext import commands
 from disnake.ui import View
 from disnake.ui.select.string import StringSelect
-from sqlite3 import connect
 from pytz import timezone
 from datetime import datetime
 
@@ -66,51 +65,39 @@ class ServiceSelect(StringSelect):
             # генерация и сохранение кода заказа
             combination = await utils.generate_random_combination(10)
             for element in codes:
-                if combination in element:
+                if combination in element["code"]:
                     combination = await utils.generate_random_combination(10)
                     continue
                 else:
                     break
             codes.append({"code": combination})
 
-            with open(SSBot.PATH_TO_CODES, 'w') as file:  # сохранение файла с кодами заказа
-                json.dump(codes, file)
+            # with open(SSBot.PATH_TO_CODES, 'w') as file:  # сохранение файла с кодами заказа
+            #     json.dump(codes, file)
 
-            # moscow_tz = pytz.timezone('Europe/Moscow')
-            current_time = datetime.now(tz=timezone('Europe/Moscow'))  # Создание ориентира на часовой пояс МСК
-            order_time = current_time.strftime("%d.%m.%Y %H:%M")  # получение даты оформления заказа
+            await utils.write_json(path=SSBot.PATH_TO_CODES, data=codes)
 
+            current_time = datetime.now(tz=timezone('Europe/Moscow')).strftime("%d.%m.%Y %H:%M")  # получение отформатированной даты оформления заказа в ЧП МСК
             order_code = combination.replace("}", "").replace("{", "")  # Получение кода заказа
 
-            connection = connect(SSBot.PATH_TO_CLIENT_DB)
-            cursor = connection.cursor()
-            cursor.execute("SELECT activated_promo_codes_list FROM settings WHERE user_id=?", (user_id,))
-            result = cursor.fetchone()
+            SSBot.CLIENT_DB_CURSOR.execute("SELECT activated_promo_codes_list FROM settings WHERE user_id=?", (user_id,))
+            result = SSBot.CLIENT_DB_CURSOR.fetchone()
             activated_promo_codes_list_var = result[0] if result else None
-            connection.close()
 
             if activated_promo_codes_list_var is None:
-                connection_ = connect(SSBot.PATH_TO_CLIENT_DB)
-                cursor_ = connection_.cursor()
-                cursor_.execute(
+                SSBot.CLIENT_DB_CURSOR.execute(
                     "INSERT INTO settings (user_id, activated_promo_codes_list) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET activated_promo_codes_list=?",
                     (user_id, "1234567890,", "1234567890,")
                 )
-                connection_.commit()
-                connection_.close()
+                SSBot.CLIENT_DB_CONNECTION.commit()
 
-            connection = connect(SSBot.PATH_TO_CLIENT_DB)
-            cursor = connection.cursor()
-            try:  # если у пользователя есть аватар, то тогда ссылка на него сохранится в переменную
-                author_avatar = str(ctx.author.avatar.url)
-            except AttributeError:
-                author_avatar = None
-            cursor.execute(
+            author_avatar = str(await utils.get_avatar(ctx.author.avatar))
+
+            SSBot.CLIENT_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, client_name, client_id, service_type, service_code, sending_time, client_display_name, client_avatar, mail, vk_url, telegram_url, can_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET client_name=?, client_id=?, service_type=?, service_code=?, sending_time=?, client_display_name=?, client_avatar=?, mail=?, vk_url=?, telegram_url=?, can_description=?",
-                (user_id, ctx.author.name, ctx.author.id, self.values[0], order_code, order_time, ctx.author.display_name, author_avatar, None, None, None, False, ctx.author.name, ctx.author.id, self.values[0], order_code, order_time, ctx.author.display_name, author_avatar, None, None, None, False)
+                (user_id, ctx.author.name, ctx.author.id, self.values[0], order_code, current_time, ctx.author.display_name, author_avatar, None, None, None, False, ctx.author.name, ctx.author.id, self.values[0], order_code, current_time, ctx.author.display_name, author_avatar, None, None, None, False)
             )
-            connection.commit()
-            connection.close()
+            SSBot.CLIENT_DB_CONNECTION.commit()
 
             embed = Embed(title="Проверка выбранной услуги", color=SSBot.DEFAULT_COLOR)
             embed.add_field(

@@ -17,38 +17,37 @@ class TakeRequestButtonReg(commands.Cog):
 
 
 class TakeRequestButton(disnake.ui.View):
-
     def __init__(self, bot):
         self.bot = bot
         super().__init__(timeout=None)
 
     @disnake.ui.button(label="Принять", style=disnake.ButtonStyle.green, custom_id="take_request_button")
     async def take_request(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
-        message = await interaction.channel.fetch_message(interaction.message.id)
-        client_id_from_embed = await self.for_in_embed(in_=message.embeds[0]._fields[2].items())
-        product_name_from_embed = await self.for_in_embed(in_=message.embeds[0]._fields[0].items())
-        category = disnake.utils.get(interaction.guild.categories, id=SSBot.BOT_DATA["requests_category_id"])
-        client = interaction.guild.get_member(int(client_id_from_embed))
-        avatar = utils.get_avatar(ctx_user_avatar=interaction.author.avatar)
+        message: disnake.Message = await interaction.channel.fetch_message(interaction.message.id)
+        client_id_from_embed: str = await self.__get_value_from_embed(data=message.embeds[0]._fields[2])
+        product_name_from_embed: str = await self.__get_value_from_embed(data=message.embeds[0]._fields[0])
+        category: disnake.CategoryChannel = disnake.utils.get(interaction.guild.categories, id=SSBot.BOT_DATA["requests_category_id"])
+        client: disnake.Member = interaction.guild.get_member(int(client_id_from_embed))
+        avatar: disnake.Member.avatar = await utils.get_avatar(ctx_user_avatar=interaction.author.avatar)
 
         if interaction.author.id == client_id_from_embed:
-            permissions = {
+            permissions: dict = {
                 interaction.guild.default_role: disnake.PermissionOverwrite(read_messages=False, view_channel=False, send_messages=False),
                 interaction.author: disnake.PermissionOverwrite(read_messages=True, send_messages=True, view_channel=True)
             }
         else:
-            permissions = {
+            permissions: dict = {
                 interaction.guild.default_role: disnake.PermissionOverwrite(read_messages=False, view_channel=False, send_messages=False),
                 interaction.author: disnake.PermissionOverwrite(read_messages=True, send_messages=True, view_channel=True),
                 client: disnake.PermissionOverwrite(read_messages=True, send_messages=True, view_channel=True)
             }
 
-        channel = await interaction.guild.create_text_channel(
+        channel: disnake.TextChannel = await interaction.guild.create_text_channel(
             name=f"{client.name}-{product_name_from_embed}",
             category=category, overwrites=permissions
         )
 
-        embed = message.embeds[0]
+        embed: disnake.Embed = message.embeds[0]
         embed.set_footer(
             text=f"Запрос принял {interaction.author.display_name}",
             icon_url=avatar
@@ -57,14 +56,14 @@ class TakeRequestButton(disnake.ui.View):
 
         await channel.send(f"<@{interaction.author.id}> \n<@{int(client_id_from_embed)}>")
 
-    async def for_in_embed(self, in_):
-        data = None
-        for key_, value_ in in_:
-            if key_ == "value":
-                data = value_
-                break
+    async def __get_value_from_embed(self, data: dict) -> str:
+        """
+        Получение определенного значения из Embed
+        :param data: данные из которых нужно вытащить значение
+        :return: значение
+        """
+        return data["value"]
 
-        return data
 
 def setup(client):
     client.add_cog(TakeRequestButtonReg(client))

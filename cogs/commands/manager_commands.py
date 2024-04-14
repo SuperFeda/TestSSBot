@@ -4,7 +4,9 @@ from disnake.ext import commands
 
 from main import SSBot, BOT
 from cogs.hadlers import dicts
-from cogs.hadlers.embeds import template_embeds
+from cogs.hadlers.embeds.template_embeds import DOESNT_HAVE_PERMISSION
+from cogs.hadlers.embeds.ordering_embeds import START_ORDERING_EMBED
+from cogs.hadlers.embeds.support_question_embeds import SUPPORT_EMBED
 from cogs.view.buttons.order_message_buttons import OrderMessageButtons
 from cogs.view.select_menus.question_select import QuestionSelectView
 
@@ -16,26 +18,26 @@ class ManagerCommands(commands.Cog):
     @commands.slash_command(name="summon_order_panel")
     async def summon_order_panel(self, ctx):
         if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["manager_role_id"]) not in ctx.author.roles:
-            return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
+            return await ctx.send(embed=DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["order_channel_id"])
 
-        order_embed = disnake.Embed(title="Здароу, я SkylightBot", color=disnake.Color.blurple())
-        order_embed.add_field(name="С моей помощью вы сможете полностью оформить заказ: выбор услуги и создание описания - со всем этим буду помогать я.\nДля начала заполнения нажмите на кнопку \"Оформить заказ\".", value="")
+        # order_embed = disnake.Embed(title="Здароу, я SkylightBot", color=disnake.Color.blurple())
+        # order_embed.add_field(name="С моей помощью вы сможете полностью оформить заказ: выбор услуги и создание описания - со всем этим буду помогать я.\nДля начала заполнения нажмите на кнопку \"Оформить заказ\".", value="")
 
-        await ORDER_CHANNEL.send(embed=order_embed, view=OrderMessageButtons(self.bot))
+        await ORDER_CHANNEL.send(embed=START_ORDERING_EMBED, view=OrderMessageButtons(self.bot))
 
     @commands.slash_command(name="summon_support_panel")
     async def summon_support_panel(self, ctx):
         if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["manager_role_id"]) not in ctx.author.roles:
-            return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
+            return await ctx.send(embed=DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
 
-        support_embed = disnake.Embed(title="Поддержка", color=disnake.Color.blurple())
-        support_embed.add_field(name="Тут я попытаюсь ответить на все вопросы, которые могли появится у вас во время работы с сервисом.\nВыберите интересующую вас тему в списке ниже:", value="")
+        # support_embed = disnake.Embed(title="Поддержка", color=disnake.Color.blurple())
+        # support_embed.add_field(name="Тут я могу ответить на все вопросы, которые могли появится у вас во время работы с сервисом.\nВыберите интересующую вас тему в списке ниже:", value="")
 
-        await SUPPORT_CHANNEL.send(embed=support_embed, view=QuestionSelectView(self.bot))
+        await SUPPORT_CHANNEL.send(embed=SUPPORT_EMBED, view=QuestionSelectView(self.bot))
 
     # @commands.slash_command(name="clear_services_list")
     # async def clear_services_list(self, ctx):
@@ -48,7 +50,7 @@ class ManagerCommands(commands.Cog):
     @commands.slash_command(name="update_services_list")
     async def update_services_list(self, ctx):
         if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["manager_role_id"]) not in ctx.author.roles:
-            return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
+            return await ctx.send(embed=DOESNT_HAVE_PERMISSION, ephemeral=True)
 
         await ctx.response.defer(ephemeral=True)
 
@@ -77,7 +79,7 @@ class ManagerCommands(commands.Cog):
             embed_title="Текстура для блока/предмета",
             embed_field_name=f'Цена: {dicts.SERVICE_PRICES[SSBot.TEXTURE]}₽\n\nТекстура - основное составляющее всего визуала Minecraft. Мы реализуем любые идеи для модов, ресурс-паков и не только, для улучшения того самого визуала.\n\n(Оформить заказ можно здесь: <#{SSBot.BOT_DATA["order_channel_id"]}>) ',
             embed_field_value=':arrow_down::arrow_down: ***Примеры работ ниже*** :arrow_down::arrow_down:',
-            examples=[disnake.File("images/services_work_examples/texture_example_2.jpg"), disnake.File("images/services_work_examples/texture_example.png")]
+            examples=[disnake.File("images/services_work_examples/texture_example.jpg"), disnake.File("images/services_work_examples/texture_example_2.png"), disnake.File("images/services_work_examples/texture_example_3.png")]
         )
 
         # Создание страницы с услугой "Дизайн персонажей"
@@ -90,7 +92,7 @@ class ManagerCommands(commands.Cog):
             embed_title="Дизайн персонажей",
             embed_field_name=f'Цена: {dicts.SERVICE_PRICES[SSBot.CHARACTERS_DESIGN]}₽\n\nРисовка персонажей в уникальном стиле, которых можно использовать в создании анимации или любых других целей.\n\n(Оформить заказ можно здесь: <#{SSBot.BOT_DATA["order_channel_id"]}>) ',
             embed_field_value=':arrow_down::arrow_down: ***Примеры работ ниже*** :arrow_down::arrow_down:',
-            examples=[disnake.File("images/services_work_examples/characters_design_example.png")]
+            examples=[disnake.File("images/services_work_examples/characters_design_example.png"), disnake.File("images/services_work_examples/characters_design_example_2.png")]
         )
 
         # Создание страницы с услугой "Тотем"
