@@ -202,6 +202,10 @@ class OwnerCommands(commands.Cog):
 
         await ctx.send(embed=embed, ephemeral=True)
 
+    # @commands.slash_command(name="test")
+    # async def test(self, ctx):
+    #     await ctx.send("FSDFSDFSS", view=MemberSelectMenuView(self.client))
+
 
 def setup(client):
     client.add_cog(OwnerCommands(client))

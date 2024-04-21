@@ -1,7 +1,6 @@
-import json
-
 from disnake import Member, Embed, Color, File
 from os import remove, listdir, rmdir
+from json import load as load_json, dump as dump_json
 from numpy import arange
 from random import choice
 from colorama import Fore
@@ -22,8 +21,8 @@ def read_json(path: str) -> dict:
     :param path: путь к JSON файлу
     :return: содержимое JSON
     """
-    with open(path, 'r') as json_file:
-        return json.load(json_file)
+    with open(path, 'r', encoding='utf-8') as json_file:
+        return load_json(json_file)
 
 
 async def async_read_json(path: str) -> dict:
@@ -32,8 +31,8 @@ async def async_read_json(path: str) -> dict:
     :param path: путь к JSON файлу
     :return: содержимое JSON
     """
-    with open(path, 'r') as json_file:
-        return json.load(json_file)
+    with open(path, 'r', encoding='utf-8') as json_file:
+        return load_json(json_file)
 
 
 async def write_json(path: str, data: dict) -> None:
@@ -43,8 +42,8 @@ async def write_json(path: str, data: dict) -> None:
     :param data: данные, которые должны быть записаны
     :return: None
     """
-    with open(path, 'w') as json_file:
-        json.dump(data, json_file, indent=4, ensure_ascii=False)
+    with open(path, 'w', encoding='utf-8') as json_file:
+        dump_json(data, json_file, indent=4, ensure_ascii=False)
 
 
 async def string_to_list(string: str) -> list[str]:
@@ -65,7 +64,7 @@ async def string_to_list(string: str) -> list[str]:
     return list_
 
 
-async def calc_percentage(promo_code: str, price: int) -> int | None:
+async def calc_percentage(promo_code: str, price: int) -> int:
     """
     Подсчет стоимости заказа с учетом % скидки промокода
     :param promo_code: название промокода
@@ -77,13 +76,6 @@ async def calc_percentage(promo_code: str, price: int) -> int | None:
     promo_codes_data = await async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
 
     return price - (price * promo_codes_data[promo_code]["discount_rate"] / 100)
-
-    # if len_promo_code == 10:
-    #     return price - (price * promo_codes_json["common_code"][promo_code]["discount_rate"] / 100)
-    # elif len_promo_code == 17:
-    #     return price - (price * promo_codes_json["youtube_code"][promo_code]["discount_rate"] / 100)
-    # else:
-    #     return print(f"{Fore.RED}[ERR]{Fore.RESET} Error in calc_percentage def")
 
 
 async def get_promocode_type(promocode_name: str) -> str:
@@ -118,31 +110,25 @@ async def color_order(service: str) -> Color:
     """
     from main import SSBot
 
-    if service in (SSBot.SKIN64, SSBot.SKIN128, SSBot.SKIN_4D):
-        return Color.blue()
-    elif service in (SSBot.MODEL, SSBot.ANIM_MODEL, SSBot.ANIM_TEXTURE_MODEL, SSBot.TEXTURE_MODEL):
-        return Color.brand_red()
-    elif service in (SSBot.CAPE, SSBot.TOTEM, SSBot.TOTEM_3D, SSBot.TEXTURE):
-        return Color.orange()
-    elif service in (SSBot.LETTER_LOGO, SSBot.LETTER_LOGO_2):
-        return Color.blurple()
-    elif service in (SSBot.CHARACTERS_DESIGN):
-        return Color.dark_orange()
-    elif service in (SSBot.WORLD_GENERATION, SSBot.JIGSAW_STRUCTURE):
-        return Color.magenta()
-    else:
-        return Color.default()
+    match SSBot.SERVICES_NAME[service]["service_type"]:
+        case "skin": return Color.blue()
+        case "model": return Color.brand_red()
+        case "texture": return Color.orange()
+        case "logo": return Color.blurple()
+        case "special": return Color.dark_orange()
+        case "code": return Color.magenta()
+        case _: return Color.default()
 
 
-async def color_archive_request(type: str) -> Color:
+async def color_archive_request(type_: str) -> Color:
     """
     Получение цвета для левой полоски Embed
-    :param type: тип запроса
+    :param type_: тип запроса
     :return: цвет для embed
     """
-    if type == "покупка":
+    if type_ == "покупка":
         return Color.blue()
-    elif type == "предложение":
+    elif type_ == "предложение":
         return Color.green()
     else:
         return Color.default()
@@ -181,11 +167,9 @@ async def get_avatar(ctx_user_avatar: Member.avatar) -> Member.avatar or None:
     :return: получение аватара либо None, если аватара нет
     """
     if not ctx_user_avatar:
-        avatar = None
+        return None
     else:
-        avatar = ctx_user_avatar
-
-    return avatar
+        return ctx_user_avatar
 
 
 async def star_count_conv(count: int) -> str:
@@ -231,44 +215,7 @@ async def convert_value_to_service_name(value: str) -> str:
     """
     from main import SSBot
 
-    match value:
-        case "skin64":
-            return SSBot.SKIN64
-        case "skin128":
-            return SSBot.SKIN128
-        case "skin4d":
-            return SSBot.SKIN_4D
-        case "cape":
-            return SSBot.CAPE
-        case "totem":
-            return SSBot.TOTEM
-        case "texture":
-            return SSBot.TEXTURE
-        case "letter_logo":
-            return SSBot.LETTER_LOGO
-        case "letter_logo_2":
-            return SSBot.LETTER_LOGO_2
-        case "anim_letter_logo":
-            return SSBot.ANIM_LETTER_LOGO
-        case "world_generation":
-            return SSBot.WORLD_GENERATION
-        case "blender_render":
-            return SSBot.BLENDER_RENDER
-        case "characters_design":
-            return SSBot.CHARACTERS_DESIGN
-        case "model":
-            return SSBot.MODEL
-        case "texture_model":
-            return SSBot.TEXTURE_MODEL
-        case "anim_model":
-            return SSBot.ANIM_MODEL
-        case "anim_texture_model":
-            return SSBot.ANIM_TEXTURE_MODEL
-        case "structure":
-            return SSBot.STRUCTURE
-        case "jigsaw_structure":
-            return SSBot.JIGSAW_STRUCTURE
-        case "service_promo":
-            return SSBot.SERVICE_PROMO_CODE
-
-
+    try:
+        return SSBot.SERVICES_NAME[value]["name"]
+    except KeyError:
+        return "None"

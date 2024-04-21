@@ -28,6 +28,6 @@ REVIEW_CHECKING_EMBED: Embed = create_embed(title="Проверка", color=SSBo
 START_CREATING_REVIEW_EMBED: Embed = create_embed(title="Создание отзыва", color=SSBot.DEFAULT_COLOR, content='Для начала выберите кол-во звезд:')
 PROMO_CODE_TIME_IS_END: Embed = create_embed(title="Промокод недействителен", color=Color.red(), content="Срок действия промокода истёк.")
 WARN_NO_AC_DATA: Embed = create_embed(title="Нет данных", color=Color.red(), content="Вы должны заполнить хотя бы одно поле из окна ввода дополнительных контактов для связи.")
-
+PROMO_CODE_DAS_NOT_A_GIFT: Embed = create_embed(title="Не верный тип промокода", color=Color.red(), content="Введенный промокод не является подарочным.")
 
 

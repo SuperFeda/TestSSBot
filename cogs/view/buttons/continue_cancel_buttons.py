@@ -88,7 +88,7 @@ class ContinueAndCancelButtons(disnake.ui.View):
     @disnake.ui.button(label="Отмена", style=disnake.ButtonStyle.red, custom_id="cancel_button_cacb")
     async def cancel_button_cacb(self, button: disnake.ui.Button, ctx: disnake.MessageInteraction):
         embed: disnake.Embed = utils.create_embed(title="Операция отменена", color=disnake.Color.red(), content="Операция оформления заказа с подарочным промокодом отменена.")
-        await ctx.send(embed=embed, ephemeral=True)
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

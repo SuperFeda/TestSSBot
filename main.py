@@ -9,7 +9,7 @@ from cogs.hadlers.utils import read_json
 #                                   #
 # Самый говнокод из всех говнокодов #
 #                                   #
-# Python 3.10                       #
+# Python 3.11                       #
 # disnake 2.9.1                     #
 # colorama 0.4.6                    #
 # numpy 1.26.4                      #
@@ -21,6 +21,7 @@ from cogs.hadlers.utils import read_json
 class SSBot(Bot):  # main класс бота
     BOT_CONFIG: dict = read_json("./data/bot_config.json")
     BOT_DATA: dict = read_json("./data/bot_data.json")
+    SERVICES_NAME: dict = read_json("./data/services.json")
     PATH_TO_CLIENT_DB: str = "data/skylightbot_client_base.db"
     CLIENT_DB_CONNECTION: connect = connect(PATH_TO_CLIENT_DB)
     CLIENT_DB_CURSOR: Cursor = CLIENT_DB_CONNECTION.cursor()
@@ -33,28 +34,19 @@ class SSBot(Bot):  # main класс бота
     ORDER_ID_SYMBOLS: str = "1234567890AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
     DEFAULT_COLOR: Color = Color.from_rgb(r=43, g=45, b=49)
     DONATION_ALERTS_COLOR: Color = Color.from_rgb(r=233, g=121, b=13)
-    SKIN64: str = "Скин 64x64"
-    SKIN128: str = "Скин 128x128"
-    SKIN_4D: str = "4D скин"
-    MODEL: str = "Модель"
-    ANIM_MODEL: str = "Модель + анимация"
-    TEXTURE_MODEL: str = "Модель + текстура"
-    ANIM_TEXTURE_MODEL: str = "Модель + анимация + текстура"
-    CAPE: str = "Плащ"
-    CAPE_4D: str = "4D плащ"
-    TOTEM: str = "Тотем"
-    TOTEM_3D: str = "3D тотем"
-    TEXTURE: str = "Текстура блока/предмета"
-    LETTER_LOGO: str = "Буквенный логотип"
-    LETTER_LOGO_2: str = "Логотип с кастомными буквами/доп. деталями"
-    ANIM_LETTER_LOGO: str = "Анимированный буквенный логотип"
-    BLENDER_RENDER: str = "Обработка в Blender"
-    CHARACTERS_DESIGN: str = "Дизайн персонажей"
-    WORLD_GENERATION: str = "Генерация мира"
-    JIGSAW_STRUCTURE: str = "Jigsaw структура"
-    STRUCTURE: str = "Постройка"
-    SERVICE_PROMO_CODE: str = "Промокод на услугу"
-    NOT_STATIC_PRICE: tuple = (MODEL, ANIM_MODEL, TEXTURE_MODEL, ANIM_TEXTURE_MODEL, LETTER_LOGO_2, STRUCTURE, JIGSAW_STRUCTURE, WORLD_GENERATION, SERVICE_PROMO_CODE)
+    # NOT_STATIC_PRICE = [SERVICES_NAME[element]["name"] for element in SERVICES_NAME if SERVICES_NAME[element]["price_type"] == "nstatic"]
+    NOT_STATIC_PRICE: tuple = (
+        SERVICES_NAME["model"]["code"],
+        SERVICES_NAME["anim_model"]["code"],
+        SERVICES_NAME["texture_model"]["code"],
+        SERVICES_NAME["anim_texture_model"]["code"],
+        SERVICES_NAME["letter_logo_2"]["code"],
+        SERVICES_NAME["structure"]["code"],
+        SERVICES_NAME["jigsaw_structure"]["code"],
+        SERVICES_NAME["world_generation"]["code"],
+        SERVICES_NAME["service_promocode"]["code"],
+        SERVICES_NAME["blender_render"]["code"]
+    )
 
     def __init__(self):
         super().__init__(
@@ -65,34 +57,37 @@ class SSBot(Bot):  # main класс бота
             owner_id=875246294044643371
         )
 
+    def load_cogs(self) -> None:
+        """
+        Загрузка когов бота.
+        :return: None
+        """
+        # load bot commands
+        for filename in listdir("./cogs/commands"):
+            if filename.endswith(".py"):
+                self.load_extension(f'cogs.commands.{filename[:-3]}')
 
-def load_cogs():  # def для загрузки когов бота
-    # load bot commands
-    for filename in listdir("./cogs/commands"):
-        if filename.endswith(".py"):
-            BOT.load_extension(f'cogs.commands.{filename[:-3]}')
+        # load buttons
+        for filename in listdir("./cogs/view/buttons"):
+            if filename.endswith(".py"):
+                self.load_extension(f'cogs.view.buttons.{filename[:-3]}')
 
-    # load buttons
-    for filename in listdir("./cogs/view/buttons"):
-        if filename.endswith(".py"):
-            BOT.load_extension(f'cogs.view.buttons.{filename[:-3]}')
+        # load modals menus
+        for filename in listdir("./cogs/view/modals_menu"):
+            if filename.endswith(".py"):
+                self.load_extension(f'cogs.view.modals_menu.{filename[:-3]}')
 
-    # load modals menus
-    for filename in listdir("./cogs/view/modals_menu"):
-        if filename.endswith(".py"):
-            BOT.load_extension(f'cogs.view.modals_menu.{filename[:-3]}')
+        # load select menus
+        for filename in listdir("./cogs/view/select_menus"):
+            if filename.endswith(".py"):
+                self.load_extension(f'cogs.view.select_menus.{filename[:-3]}')
 
-    # load select menus
-    for filename in listdir("./cogs/view/select_menus"):
-        if filename.endswith(".py"):
-            BOT.load_extension(f'cogs.view.select_menus.{filename[:-3]}')
+        # load rate system
+        for filename in listdir("./cogs/systems/rate_system"):
+            if filename.endswith(".py"):
+                self.load_extension(f'cogs.systems.rate_system.{filename[:-3]}')
 
-    # load rate system
-    for filename in listdir("./cogs/systems/rate_system"):
-        if filename.endswith(".py"):
-            BOT.load_extension(f'cogs.systems.rate_system.{filename[:-3]}')
-
-    BOT.load_extension("cogs.events")  # load bot events
+        self.load_extension("cogs.events")  # load bot events
 
 
 SSBot.WORKER_DB_CURSOR.execute("""
@@ -118,6 +113,7 @@ SSBot.CLIENT_DB_CURSOR.execute("""
         promo_code_activated,
         youtube_promo_code_counter,
         service_type,
+        service_for_gift,
         service_description,
         stars,
         service_code,
@@ -189,11 +185,12 @@ SSBot.CLIENT_DB_CURSOR.execute("""
 #     await ctx.send(embed=embed)
 ###########
 
-BOT = SSBot()
-BOT.i18n.load("./lang/")  # Подгрузка файлов локализации
 
 # if __name__ == '__main__':
-load_cogs()
+BOT = SSBot()
+
+BOT.i18n.load("./lang/")  # Подгрузка файлов локализации
+BOT.load_cogs()  # Подгрузка когов бота
 # asyncio.run(sio_connection())
 
 BOT.run(environ["SSBOT_TOKEN"])

@@ -1,6 +1,6 @@
 import disnake
 
-from disnake.ext import commands
+from disnake.ext.commands import Bot, Cog, slash_command
 from disnake import Localized
 
 from main import BOT, SSBot
@@ -9,11 +9,11 @@ from cogs.hadlers.embeds import template_embeds
 from cogs.view.buttons.take_request import TakeRequestButton
 
 
-class ClientCommands(commands.Cog):
-    def __init__(self, bot):
+class ClientCommands(Cog):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.slash_command(
+    @slash_command(
         name=Localized("send_report", key="send_report.display_name"),
         description=Localized("Notify employees about an error in the service", key="send_report.description"),
         options=[
@@ -100,7 +100,7 @@ class ClientCommands(commands.Cog):
     #         view=ContinueButton(self.bot), ephemeral=True
     #     )
 
-    @commands.slash_command(
+    @slash_command(
         name=Localized("archive", key="archive.display_name"),
         description=Localized("Send a request to purchase an item from the archive or an offer to add it", key="archive.description"),
         options=[
@@ -109,7 +109,7 @@ class ClientCommands(commands.Cog):
         ]
     )
     async def archive(self, ctx, product_name: str, request_type: str):
-        color = await utils.color_archive_request(type=request_type)
+        color = await utils.color_archive_request(type_=request_type)
         channel = BOT.get_channel(SSBot.BOT_DATA["request_channel_id"])
         avatar = await utils.get_avatar(ctx_user_avatar=ctx.author.avatar)
 

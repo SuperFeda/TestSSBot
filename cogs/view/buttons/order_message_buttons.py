@@ -1,6 +1,6 @@
 import disnake
 
-from disnake.ext import commands
+from disnake.ext.commands import Cog
 
 from main import BOT, SSBot
 from cogs.hadlers import utils
@@ -9,11 +9,11 @@ from cogs.view.select_menus.service_select import ServiceSelectView
 from cogs.systems.rate_system.stars_button import StarsButton
 
 
-class OrderMessageButtonsReg(commands.Cog):
+class OrderMessageButtonsReg(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_ready(self):
         print("OrderMessageButtons was added")
         self.bot.add_view(OrderMessageButtons(bot=self.bot))

@@ -1,4 +1,4 @@
-import disnake, sqlite3
+import disnake
 
 from disnake.ext import commands
 
@@ -32,11 +32,6 @@ class ContinueAndAdtConButtons(disnake.ui.View):
         SSBot.CLIENT_DB_CURSOR.execute("SELECT client_name FROM settings WHERE user_id=?", (user_id,))
         result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_client_name = result[0] if result else None
-
-        # find client avatar
-        SSBot.CLIENT_DB_CURSOR.execute("SELECT client_avatar FROM settings WHERE user_id=?", (user_id,))
-        result = SSBot.CLIENT_DB_CURSOR.fetchone()
-        var_client_avatar = result[0] if result else None
 
         # find client display name
         SSBot.CLIENT_DB_CURSOR.execute("SELECT client_display_name FROM settings WHERE user_id=?", (user_id,))

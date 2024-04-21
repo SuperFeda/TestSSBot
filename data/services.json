@@ -1,0 +1,155 @@
+{
+    "skin64": {
+        "name": "Скин 64x64",
+        "code": "skin64",
+        "price_type": "static",
+        "service_type": "skin"
+    },
+
+    "skin128": {
+        "name": "Скин 128x128",
+        "code": "skin128",
+        "price_type": "static",
+        "service_type": "skin"
+    },
+
+    "skin4d": {
+        "name": "4D скин",
+        "code": "skin4d",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "rew_skin": {
+        "name": "Перерисовка скина",
+        "code": "rew_skin",
+        "price_type": "static",
+        "service_type": "skin"
+    },
+
+    "cape": {
+        "name": "Плащ",
+        "code": "cape",
+        "price_type": "static",
+        "service_type": "texture"
+    },
+
+    "cape4d": {
+        "name": "4D Плащ",
+        "code": "cape4d",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "totem": {
+        "name": "Тотем",
+        "code": "totem",
+        "price_type": "static",
+        "service_type": "texture"
+    },
+
+    "totem3d": {
+        "name": "3D Тотем",
+        "code": "totem3d",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "texture": {
+        "name": "Текстура блока/предмета",
+        "code": "texture",
+        "price_type": "static",
+        "service_type": "texture"
+    },
+
+    "letter_logo": {
+        "name": "Буквенный логотип",
+        "code": "letter_logo",
+        "price_type": "static",
+        "service_type": "logo"
+    },
+
+    "letter_logo_2": {
+        "name": "Логотип с кастомными буквами/доп. деталями",
+        "code": "letter_logo_2",
+        "price_type": "nstatic",
+        "service_type": "logo"
+    },
+
+    "anim_letter_logo": {
+        "name": "Анимированный буквенный логотип",
+        "code": "anim_letter_logo",
+        "price_type": "nstatic",
+        "service_type": "logo"
+    },
+
+    "world_generation": {
+        "name": "Генерация мира",
+        "code": "world_generation",
+        "price_type": "nstatic",
+        "service_type": "code"
+    },
+
+    "blender_render": {
+        "name": "Обработка в Blender",
+        "code": "blender_render",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "characters_design": {
+        "name": "Дизайн персонажей",
+        "code": "characters_design",
+        "price_type": "static",
+        "service_type": "special"
+    },
+
+    "model": {
+        "name": "Модель",
+        "code": "model",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "texture_model": {
+        "name": "Модель + текстура",
+        "code": "texture_model",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "anim_model": {
+        "name": "Модель + анимация",
+        "code": "anim_model",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "anim_texture_model": {
+        "name": "Модель + анимация + текстура",
+        "code": "anim_texture_model",
+        "price_type": "nstatic",
+        "service_type": "model"
+    },
+
+    "structure": {
+        "name": "Постройка",
+        "code": "structure",
+        "price_type": "nstatic",
+        "service_type": "build"
+    },
+
+    "jigsaw_structure": {
+        "name": "Jigsaw структура",
+        "code": "jigsaw_structure",
+        "price_type": "nstatic",
+        "service_type": "build"
+    },
+
+    "service_promocode": {
+        "name": "Промокод на услугу",
+        "code": "service_promocode",
+        "price_type": "nstatic",
+        "service_type": "special"
+    }
+}

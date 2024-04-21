@@ -1,7 +1,7 @@
 import disnake
 
 from disnake import Embed
-from disnake.ext import commands
+from disnake.ext.commands import Cog
 
 from main import SSBot
 from cogs.hadlers import utils
@@ -9,12 +9,11 @@ from cogs.hadlers.embeds import template_embeds
 from cogs.view.buttons.continue_cancel_buttons import ContinueAndCancelButtons
 
 
-# Класс для регистрации этого файла как кога, чтобы его можно было загрузить в main
-class EnterServicePromoCodeMenuReg(commands.Cog):
+class EnterServicePromoCodeMenuReg(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_ready(self):
         print("EnterServicePromoCodeMenu was added")
         self.bot.add_view(EnterServicePromoCodeMenu(bot=self.bot))
@@ -42,8 +41,10 @@ class EnterServicePromoCodeMenu(disnake.ui.Modal):
         promo_codes_data: dict = await utils.async_read_json(SSBot.PATH_TO_PROMO_CODES_DATA)
         member: disnake.Member = ctx.guild.get_member(ctx.author.id)
 
+        if enter_promo_code not in promo_codes_data:
+            return await ctx.send(embed=template_embeds.WARN_PROMO_CODE_NOT_IN_DB)
         if promo_codes_data[enter_promo_code]["type"] != "service_code":
-            return await ctx.send("код не подарочный", ephemeral=True)
+            return await ctx.send(embed=template_embeds.PROMO_CODE_DAS_NOT_A_GIFT, ephemeral=True)
 
         SSBot.CLIENT_DB_CURSOR.execute("SELECT activated_promo_codes_list FROM settings WHERE user_id=?", (ctx.author.id,))
         result = SSBot.CLIENT_DB_CURSOR.fetchone()
@@ -53,13 +54,13 @@ class EnterServicePromoCodeMenu(disnake.ui.Modal):
             user_codes: list = await utils.string_to_list(activated_promo_codes_list_var)
 
             if enter_promo_code in user_codes:
-                return await ctx.send("код в бд клиента", ephemeral=True)
+                return await ctx.send(embed=template_embeds.WARN_PROMO_CODE_WAS_PREVIOUSLY_ENTERED_EMBED, ephemeral=True)
 
         service: str = await utils.convert_value_to_service_name(promo_codes_data[enter_promo_code]["service"])
 
         embed: Embed = Embed(title="Промокод активирован!", color=SSBot.DEFAULT_COLOR)
         embed.add_field(
-            name=f'Подарочный промокод на услугу {service} активирован. Выберите дальнейшие действия:',
+            name=f'Подарочный промокод на услугу ***{service}*** активирован. Выберите дальнейшие действия:',
             value="", inline=False
         )
 

@@ -51,6 +51,11 @@ class DonationAndPromoCodeButtons(View):
         result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_service_type = result[0] if result else None
 
+        # get service for gift
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT service_for_gift FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.CLIENT_DB_CURSOR.fetchone()
+        var_gift_service = result[0] if result else None
+
         # get service description
         SSBot.CLIENT_DB_CURSOR.execute("SELECT service_description FROM settings WHERE user_id=?", (user_id,))
         result = SSBot.CLIENT_DB_CURSOR.fetchone()
@@ -95,9 +100,11 @@ class DonationAndPromoCodeButtons(View):
 
         order_embed = Embed(title='Новый заказ:', color=color)
         order_embed.add_field(name=f'Код заказа: {var_service_code}\nДата оформления: {var_sending_time} (МСК / GMT+3)\nИмя заказчика: {var_client_display_name} (tag: {var_client_name})', value="")
-        order_embed.add_field(name='Услуга:', value=var_service_type, inline=False)
+        order_embed.add_field(name='Услуга:', value=await utils.convert_value_to_service_name(value=var_service_type), inline=False)
         order_embed.add_field(name='ID заказчика:', value=var_client_id, inline=False)
-        order_embed.add_field(name="Описание:", value=var_service_description, inline=False)
+
+        if var_service_description is not None:
+            order_embed.add_field(name="Описание:", value=var_service_description, inline=False)
 
         if var_active_promo_code is not None:
             order_embed.add_field(name="Активированный промокод:", value=var_active_promo_code, inline=False)
@@ -119,20 +126,22 @@ class DonationAndPromoCodeButtons(View):
 
             if promo_code_type == "common_code":
                 self.__clear_promo_code_db(user_id=user_id)
-
                 percentage = promo_codes_data[var_active_promo_code]["discount_rate"]
                 pay_message_2 = f"\nТ.к. вы использовали промокод {var_active_promo_code} на скидку {percentage}%, то оплата будет в размере {sum_for_pay}₽."
-
             elif promo_code_type == "premium_code":
                 percentage = promo_codes_data[var_active_promo_code]["discount_rate"]
                 pay_message_2 = f"\nТ.к. вы использовали промокод {var_active_promo_code} на скидку {percentage}%, то оплата будет в размере {sum_for_pay}₽."
-
             elif promo_code_type == "aditi_service_code":
                 self.__clear_promo_code_db(user_id=user_id)
-
                 service = await utils.convert_value_to_service_name(promo_codes_data[var_active_promo_code]["service"])
                 pay_message_2 = f'\nВы использовали промокод {var_active_promo_code} на дополнительную услугу {service} в подарок.'
                 order_embed.add_field(name=f'(Промокод {var_active_promo_code} на доп. услугу {service})', value="", inline=False)
+
+        if var_gift_service is not None:
+            order_embed.add_field(name=f"Услуга для промокода: {await utils.convert_value_to_service_name(value=var_gift_service)}", value="")
+            var_service = await utils.convert_value_to_service_name(value=var_gift_service)
+        else:
+            var_service = await utils.convert_value_to_service_name(value=var_service_type)
 
         avatar = await utils.get_avatar(ctx_user_avatar=ctx.author.avatar)
         order_embed.set_author(name=var_client_display_name, icon_url=avatar)
@@ -152,7 +161,7 @@ class DonationAndPromoCodeButtons(View):
                 )
                 SSBot.CLIENT_DB_CONNECTION.commit()
 
-        if var_service_type in SSBot.NOT_STATIC_PRICE:
+        if var_service in SSBot.NOT_STATIC_PRICE:
             pay_message = "Ваш заказ был отправлен мастерам SkylightServices. Скоро с вами свяжется один из мастеров."
             pay_message_2 = "\nСсылку для оплаты вам предоставят после связи с сотрудником."
         else:
@@ -163,9 +172,7 @@ class DonationAndPromoCodeButtons(View):
 
         try:
             pictures = await utils.get_files_disnake(f"cache/{ctx.author.name}/")
-
             await WORKER_ORDER_CHANNEL.send(embed=order_embed, view=TakeOrder(self.bot), files=pictures)
-
             await utils.delete_files_from_cache(author_name=ctx.author.name)
         except FileNotFoundError:
             await WORKER_ORDER_CHANNEL.send(embed=order_embed, view=TakeOrder(self.bot))

@@ -8,8 +8,10 @@ from pytz import timezone
 from datetime import datetime
 
 from main import SSBot
-from cogs.hadlers import utils, dicts
+from cogs.hadlers import utils
+from cogs.hadlers.dicts import SERVICE_PRICES, NOT_STATIC_PRICE
 from cogs.view.buttons.enter_description_button import EnterDescriptionButton
+from cogs.view.select_menus.promo_code_service_select import PromoCodeServiceSelectView
 
 
 class ServiceSelectReg(commands.Cog):
@@ -28,26 +30,22 @@ class ServiceSelect(StringSelect):
         super().__init__(
             placeholder="Список услуг", min_values=1, max_values=1,
             custom_id="service_select", options=[
-                SelectOption(label=SSBot.SKIN64, description=f"{dicts.SERVICE_PRICES[SSBot.SKIN64]}₽", emoji="🧍‍♂️"),
-                # disnake.SelectOption(label="Скин 128x128", emoji="🧍‍♂️"),
-                # disnake.SelectOption(label="4D скин", emoji="🧍‍♂️"),
+                SelectOption(label=SSBot.SERVICES_NAME["skin64"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["skin64"]["code"]]}₽', value="skin64", emoji="🧍‍♂️"),
+                SelectOption(label=SSBot.SERVICES_NAME["rew_skin"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["rew_skin"]["code"]]}₽', value="rew_skin", emoji="🧍‍♂️"),
 
-                SelectOption(label=SSBot.MODEL, description=f"от {dicts.NOT_STATIC_PRICE[SSBot.MODEL]}₽", emoji="\N{SNOWMAN}"),
-                SelectOption(label=SSBot.ANIM_MODEL, description=f"от {dicts.NOT_STATIC_PRICE[SSBot.ANIM_MODEL]}₽", emoji="\N{SNOWMAN}"),
-                SelectOption(label=SSBot.TEXTURE_MODEL, description=f"от {dicts.NOT_STATIC_PRICE[SSBot.TEXTURE_MODEL]}₽", emoji="\N{SNOWMAN}"),
-                # disnake.SelectOption(label="Модель + GeckoLib анимация + текстура", description="",  emoji="\N{SNOWMAN}"),
+                SelectOption(label=SSBot.SERVICES_NAME["model"]["name"], description=f'от {NOT_STATIC_PRICE[SSBot.SERVICES_NAME["model"]["code"]]}₽', value="model", emoji="\N{SNOWMAN}"),
+                SelectOption(label=SSBot.SERVICES_NAME["anim_model"]["name"], description=f'от {NOT_STATIC_PRICE[SSBot.SERVICES_NAME["anim_model"]["code"]]}₽', value="anim_model", emoji="\N{SNOWMAN}"),
+                SelectOption(label=SSBot.SERVICES_NAME["texture_model"]["name"], description=f'от {NOT_STATIC_PRICE[SSBot.SERVICES_NAME["texture_model"]["code"]]}₽', value="texture_model", emoji="\N{SNOWMAN}"),
 
-                SelectOption(label=SSBot.CAPE, description=f"{dicts.SERVICE_PRICES[SSBot.CAPE]}₽", emoji="🧶"),
-                SelectOption(label=SSBot.TOTEM, description=f"{dicts.SERVICE_PRICES[SSBot.TOTEM]}₽", emoji="🧶"),
-                # disnake.SelectOption(label="3D тотем со скином игрока", description="", emoji="🧶"),
-                SelectOption(label=SSBot.TEXTURE, description=f"{dicts.SERVICE_PRICES[SSBot.TEXTURE]}₽", emoji="🧶"),
+                SelectOption(label=SSBot.SERVICES_NAME["cape"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["cape"]["code"]]}₽', value="cape", emoji="🧶"),
+                SelectOption(label=SSBot.SERVICES_NAME["totem"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["totem"]["code"]]}₽', value="totem", emoji="🧶"),
+                SelectOption(label=SSBot.SERVICES_NAME["texture"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["texture"]["code"]]}₽', value="texture", emoji="🧶"),
 
-                SelectOption(label=SSBot.LETTER_LOGO, description=f"{dicts.SERVICE_PRICES[SSBot.LETTER_LOGO]}₽", emoji="🆎"),
-                SelectOption(label=SSBot.LETTER_LOGO_2, description=f"от {dicts.NOT_STATIC_PRICE[SSBot.LETTER_LOGO_2]}₽", emoji="🆎"),
+                SelectOption(label=SSBot.SERVICES_NAME["letter_logo"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["letter_logo"]["code"]]}₽', value="letter_logo", emoji="🆎"),
+                SelectOption(label=SSBot.SERVICES_NAME["letter_logo_2"]["name"], description=f'от {NOT_STATIC_PRICE[SSBot.SERVICES_NAME["letter_logo_2"]["code"]]}₽', value="letter_logo_2", emoji="🆎"),
 
-                SelectOption(label=SSBot.CHARACTERS_DESIGN, description=f"{dicts.SERVICE_PRICES[SSBot.CHARACTERS_DESIGN]}₽", emoji="🥚"),
-
-                # disnake.SelectOption(label=SSBot.SPIGOT_PLUGIN, description=dicts.NOT_STATIC_PRICE[SSBot.SPIGOT_PLUGIN], emoji="💻"),
+                SelectOption(label=SSBot.SERVICES_NAME["characters_design"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["characters_design"]["code"]]}₽', value="character_design", emoji="🥚"),
+                SelectOption(label=SSBot.SERVICES_NAME["service_promocode"]["name"], description="", value="service_promocode", emoji="🥚")
             ]
         )
 
@@ -71,9 +69,6 @@ class ServiceSelect(StringSelect):
                 else:
                     break
             codes.append({"code": combination})
-
-            # with open(SSBot.PATH_TO_CODES, 'w') as file:  # сохранение файла с кодами заказа
-            #     json.dump(codes, file)
 
             await utils.write_json(path=SSBot.PATH_TO_CODES, data=codes)
 
@@ -99,17 +94,28 @@ class ServiceSelect(StringSelect):
             )
             SSBot.CLIENT_DB_CONNECTION.commit()
 
-            embed = Embed(title="Проверка выбранной услуги", color=SSBot.DEFAULT_COLOR)
-            embed.add_field(
-                name=f"Вы выбрали ***{self.values[0]}***. Если вы по ошибке выбрали не ту услугу, то снова откройте список и выберите нужную вам.",
-                value="", inline=False
-            )
-            embed.add_field(
-                name="Для того, чтобы продолжить оформление заказа и начать описывать ваш желаемый результат, нажмите на кнопку \"Ввод описания\"",
-                value="", inline=False
-            )
+            if self.values[0] != "service_promocode":
+                embed = Embed(title="Проверка выбранной услуги", color=SSBot.DEFAULT_COLOR)
+                embed.add_field(
+                    name=f"Вы выбрали ***{await utils.convert_value_to_service_name(value=self.values[0])}***. Если вы по ошибке выбрали не ту услугу, то снова откройте список и выберите нужную вам.",
+                    value="", inline=False
+                )
+                embed.add_field(
+                    name="Для того, чтобы продолжить оформление заказа и начать описывать ваш желаемый результат, нажмите на кнопку \"Ввод описания\"",
+                    value="", inline=False
+                )
 
-        await ctx.send(embed=embed, view=EnterDescriptionButton(self.bot))
+                view = EnterDescriptionButton(self.bot)
+            else:
+                embed: Embed = Embed(title="Оформление подарочного промокода", color=SSBot.DEFAULT_COLOR)
+                embed.add_field(
+                    name=f"Вы выбрали ***{await utils.convert_value_to_service_name(value=self.values[0])}***. Для того чтобы продолжить оформление подарочного промокода, выберите ниже услугу, к которой он должен относится:",
+                    value="", inline=False
+                )
+
+                view = PromoCodeServiceSelectView(self.bot)
+
+        await ctx.send(embed=embed, view=view)
 
 
 class ServiceSelectView(View):
