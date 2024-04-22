@@ -1,4 +1,4 @@
-from disnake import DMChannel, ChannelType, errors, Embed, Color, File, Message
+from disnake import DMChannel, ChannelType, errors, Embed, Color, File, Message, TextChannel
 from disnake.ext import commands
 from os import listdir, mkdir
 from colorama import Fore
@@ -26,8 +26,8 @@ class BotEvents(commands.Cog):
         # отправка сообщения, через которое происходит оформление заказа в канал ORDER_CHANNEL, как только бот становится активен
         print(f"{Fore.RED}[WARN]{Fore.RESET} Бот запущен и готов начать самую большую оргию")
 
-        ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["order_channel_id"])
-        SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
+        ORDER_CHANNEL: TextChannel = BOT.get_channel(SSBot.BOT_DATA["order_channel_id"])
+        SUPPORT_CHANNEL: TextChannel = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
 
         components = [
             OrderMessageButtons(self.client).order_button,
@@ -68,14 +68,14 @@ class BotEvents(commands.Cog):
             except AttributeError:
                 pass
 
-        LOG_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["log_channel_id"])
+        LOG_CHANNEL: TextChannel = BOT.get_channel(SSBot.BOT_DATA["log_channel_id"])
 
         if message.author != BOT.user:                                      # отправка сообщений от всех пользователей в LOG_CHANNEL, если id канала, где
             if message.channel.id in SSBot.BOT_DATA["banned_channels_id"]:  # было опубликованно сообщение не находится в banned_channels и автор сообщения не SSBot
                 return
             avatar = await utils.get_avatar(ctx_user_avatar=message.author.avatar)
 
-            embed = Embed(title="Сообщение", color=SSBot.DEFAULT_COLOR)
+            embed: Embed = Embed(title="Сообщение", color=SSBot.DEFAULT_COLOR)
             embed.add_field(name=f'"<#{message.channel.id}>" :>> ', value=message.content)
             embed.set_author(name=message.author.display_name, icon_url=avatar)
             try:
@@ -85,7 +85,7 @@ class BotEvents(commands.Cog):
 
         await BOT.process_commands(message)
 
-    def __set_can_description_to_false(self, user_id) -> None:
+    def __set_can_description_to_false(self, user_id: int) -> None:
         SSBot.CLIENT_DB_CURSOR.execute(
             "INSERT INTO settings (user_id, can_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET can_description=?",
             (user_id, False, False)
@@ -93,8 +93,8 @@ class BotEvents(commands.Cog):
         SSBot.CLIENT_DB_CONNECTION.commit()
 
     async def order_path(self, message) -> None | Message:
-        len_message_content = len(message.content)
-        len_message_attachments = len(message.attachments)
+        len_message_content: int = len(message.content)
+        len_message_attachments: int = len(message.attachments)
 
         if len_message_attachments > 10:
             self.__set_can_description_to_false(user_id=message.author.id)
@@ -107,7 +107,7 @@ class BotEvents(commands.Cog):
             return await message.channel.send(f"<@{message.author.id}>", view=EnterDescriptionAgainButton(self.client), embed=WARN_SHORT_DESC_EMBED)
 
         pictures = None
-        embed_for_send = []
+        embed_for_send: list = []
 
         SSBot.CLIENT_DB_CURSOR.execute(
             "INSERT INTO settings (user_id, service_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET service_description=?",
@@ -131,7 +131,7 @@ class BotEvents(commands.Cog):
             embed_for_send.append(desc)
 
             if len_message_attachments > 0:
-                banned_filenames = []
+                banned_filenames: list = []
                 for image in message.attachments:
                     img_fln = image.filename[-5:]
                     # если файл имеет не разрешенный формат, то добавить его имя в список "banned_filenames"
@@ -161,7 +161,7 @@ class BotEvents(commands.Cog):
 
         self.__set_can_description_to_false(user_id=message.author.id)
 
-        components_list = [
+        components_list: list = [
             EnterDescriptionAgainButton(self.client).enter_desc_button,
             ContinueAndAdtConButtons(self.client).continue_button,
             ContinueAndAdtConButtons(self.client).additional_contacts_button
@@ -171,8 +171,8 @@ class BotEvents(commands.Cog):
 
     async def review_path(self, message) -> None | Message:
         if "отзыв" in message.channel.name:
-            len_message_content = len(message.content)
-            len_message_attachments = len(message.attachments)
+            len_message_content: int = len(message.content)
+            len_message_attachments: int = len(message.attachments)
 
             if len_message_attachments > 1:
                 self.__set_can_description_to_false(user_id=message.author.id)
@@ -201,7 +201,7 @@ class BotEvents(commands.Cog):
                 if message.author.name in listdir("cache/"):  # если папка с именем пользователя уже есть в папке с кешем, то удалить ее и ее содержимое
                     await utils.delete_files_from_cache(author_name=message.author.name)
 
-                desc = Embed(title="Проверка описания", color=SSBot.DEFAULT_COLOR)
+                desc: Embed = Embed(title="Проверка описания", color=SSBot.DEFAULT_COLOR)
                 desc.add_field(
                     name=f"Проверьте введенное вами описание и прикрепленные фотографии (при наличии):",
                     value=f"**{message.content}**", inline=False
@@ -229,7 +229,7 @@ class BotEvents(commands.Cog):
 
             self.__set_can_description_to_false(user_id=message.author.id)
 
-            components_list = [
+            components_list: list = [
                 EnterDescriptionAgainButton(self.client).enter_desc_button,
                 ContinueButtonForReview(self.client).continue_button_for_review
             ]

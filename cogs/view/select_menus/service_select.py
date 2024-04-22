@@ -52,7 +52,7 @@ class ServiceSelect(StringSelect):
         )
 
     async def callback(self, interaction: MessageInteraction) -> None:
-        user_id = interaction.author.id
+        user_id: int = interaction.author.id
 
         async with interaction.channel.typing():
 
@@ -74,8 +74,8 @@ class ServiceSelect(StringSelect):
 
             await utils.write_json(path=SSBot.PATH_TO_CODES, data=codes)
 
-            current_time = datetime.now(tz=timezone('Europe/Moscow')).strftime("%d.%m.%Y %H:%M")  # получение отформатированной даты оформления заказа в ЧП МСК
-            order_code = combination.replace("}", "").replace("{", "")  # Получение кода заказа
+            current_time: str = datetime.now(tz=timezone('Europe/Moscow')).strftime("%d.%m.%Y %H:%M")  # получение отформатированной даты оформления заказа в ЧП МСК
+            order_code: str = combination.replace("}", "").replace("{", "")  # Получение кода заказа
 
             SSBot.CLIENT_DB_CURSOR.execute("SELECT activated_promo_codes_list FROM settings WHERE user_id=?", (user_id,))
             result = SSBot.CLIENT_DB_CURSOR.fetchone()
@@ -88,7 +88,7 @@ class ServiceSelect(StringSelect):
                 )
                 SSBot.CLIENT_DB_CONNECTION.commit()
 
-            author_avatar = str(await utils.get_avatar(interaction.author.avatar))
+            author_avatar: str = str(await utils.get_avatar(interaction.author.avatar))
 
             SSBot.CLIENT_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, client_name, client_id, service_type, service_code, sending_time, client_display_name, client_avatar, mail, vk_url, telegram_url, can_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET client_name=?, client_id=?, service_type=?, service_code=?, sending_time=?, client_display_name=?, client_avatar=?, mail=?, vk_url=?, telegram_url=?, can_description=?",
@@ -97,7 +97,7 @@ class ServiceSelect(StringSelect):
             SSBot.CLIENT_DB_CONNECTION.commit()
 
             if self.values[0] != "service_promocode":
-                embed = Embed(title="Проверка выбранной услуги", color=SSBot.DEFAULT_COLOR)
+                embed: Embed = Embed(title="Проверка выбранной услуги", color=SSBot.DEFAULT_COLOR)
                 embed.add_field(
                     name=f"Вы выбрали ***{await utils.convert_value_to_service_name(value=self.values[0])}***. Если вы по ошибке выбрали не ту услугу, то снова откройте список и выберите нужную вам.",
                     value="", inline=False

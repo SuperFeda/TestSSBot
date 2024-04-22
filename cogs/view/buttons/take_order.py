@@ -72,7 +72,7 @@ class TakeOrder(View):
 
             var_worker_salary: int = int(var_worker_salary)
 
-            new_worker_salary: int = var_worker_salary + dicts.SUMM_WORKER[service_type_from_embed]
+            new_worker_salary: int = var_worker_salary + dicts.SUMM_WORKER[dicts.FROM_NAME_TO_CODE_SERVICE[service_type_from_embed]]
 
             SSBot.WORKER_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, worker_salary) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?",
@@ -84,24 +84,22 @@ class TakeOrder(View):
                 flag=flag,
                 owner=owner,
                 promo_code_type=promo_code_type,
-                service_type=service_type_from_embed,
+                service_type=dicts.FROM_NAME_TO_CODE_SERVICE[service_type_from_embed],
                 enter_promo_code=enter_promo_code_from_embed,
                 worker_salary=var_worker_salary,
                 new_worker_salary=new_worker_salary
             )
 
         except TypeError:  # иначе: запись всех данных о сотруднике
-            var_worker_salary_2 = dicts.SUMM_WORKER[service_type_from_embed]
+            var_worker_salary_2 = dicts.SUMM_WORKER[dicts.FROM_NAME_TO_CODE_SERVICE[service_type_from_embed]]
 
             await self.__save_owner_salary(  # summ_for_owner
                 flag=flag,
                 owner=owner,
                 promo_code_type=promo_code_type,
-                service_type=service_type_from_embed,
+                service_type=dicts.FROM_NAME_TO_CODE_SERVICE[service_type_from_embed],
                 enter_promo_code=enter_promo_code_from_embed
             )
-
-            await bot_utils.var_test(var_worker_salary_2)
 
             SSBot.WORKER_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, worker_salary, worker_tag, worker_display_name, worker_id) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?, worker_tag=?, worker_display_name=?, worker_id=?",
@@ -176,10 +174,6 @@ class TakeOrder(View):
 
             var_owner_sum = var_owner_sum + summ_for_owner
 
-            await bot_utils.var_test(var_owner_sum)
-            await bot_utils.var_test(worker_salary)
-            await bot_utils.var_test(new_worker_salary)
-
             SSBot.WORKER_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, worker_salary) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?",
                 (owner.id, var_owner_sum, var_owner_sum)
@@ -190,9 +184,6 @@ class TakeOrder(View):
                 summ_for_owner: int = (dicts.SERVICE_PRICES[service_type] - dicts.SUMM_WORKER[service_type]) + int(await bot_utils.calc_percentage(promo_code=enter_promo_code, price=dicts.SERVICE_PRICES[service_type]))
             else:
                 summ_for_owner: int = dicts.SERVICE_PRICES[service_type] - dicts.SUMM_WORKER[service_type]
-
-            await bot_utils.var_test(worker_salary)
-            await bot_utils.var_test(new_worker_salary)
 
             SSBot.WORKER_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, worker_salary, worker_tag, worker_display_name, worker_id) VALUES (?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?, worker_tag=?, worker_display_name=?, worker_id=?",

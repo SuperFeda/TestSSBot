@@ -37,7 +37,8 @@ class QuestionSelect(StringSelect):
         )
 
     async def callback(self, ctx):
-        embed, flag = None, True
+        flag: bool = True
+        embed = None
 
         match self.values[0]:  # проверка `value` выбранной темы и вывод ответа
             case "how_order":

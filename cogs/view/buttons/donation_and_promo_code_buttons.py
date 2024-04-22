@@ -1,4 +1,4 @@
-from disnake import ButtonStyle, Embed, Color, AppCmdInter, MessageInteraction
+from disnake import ButtonStyle, Embed, Color, AppCmdInter, MessageInteraction, TextChannel, Member
 from disnake.ui import View
 from disnake.ui.button import button, Button
 from disnake.ext.commands import Cog, Bot
@@ -30,8 +30,8 @@ class DonationAndPromoCodeButtons(View):
     async def pay_button(self, button_: Button, ctx: MessageInteraction):
         button_.disabled = True  # прекратить работу кнопки
 
-        user_id = ctx.author.id
-        WORKER_ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["worker_order_channel_id"])
+        user_id: int = ctx.author.id
+        WORKER_ORDER_CHANNEL: TextChannel = BOT.get_channel(SSBot.BOT_DATA["worker_order_channel_id"])
 
         # get client name
         SSBot.CLIENT_DB_CURSOR.execute("SELECT client_name FROM settings WHERE user_id=?", (user_id,))
@@ -98,9 +98,9 @@ class DonationAndPromoCodeButtons(View):
         result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_youtube_promo_code_counter = result[0] if result else None
 
-        color = await utils.color_order(var_service_type)  # получение цвета для embed
+        color: Color = await utils.color_order(var_service_type)  # получение цвета для embed
 
-        order_embed = Embed(title='Новый заказ:', color=color)
+        order_embed: Embed = Embed(title='Новый заказ:', color=color)
         order_embed.add_field(name=f'Код заказа: {var_service_code}\nДата оформления: {var_sending_time} (МСК / GMT+3)\nИмя заказчика: {var_client_display_name} (tag: {var_client_name})', value="")
         order_embed.add_field(name='Услуга:', value=await utils.convert_value_to_service_name(value=var_service_type), inline=False)
         order_embed.add_field(name='ID заказчика:', value=var_client_id, inline=False)
@@ -120,11 +120,11 @@ class DonationAndPromoCodeButtons(View):
             if var_mail != "" and var_mail is not None:
                 order_embed.add_field(name=f'Электронная почта: {var_mail}', value="", inline=False)
 
-        pay_message_2 = ""
+        pay_message_2: str = ""
         if var_active_promo_code is not None:
-            promo_codes_data = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)  # получение данных о промокодах
-            promo_code_type = promo_codes_data[var_active_promo_code]["type"]  # получение типа промокода
-            sum_for_pay = int(await utils.calc_percentage(promo_code=var_active_promo_code, price=dicts.SERVICE_PRICES[var_service_type]))
+            promo_codes_data: dict = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)  # получение данных о промокодах
+            promo_code_type: str = promo_codes_data[var_active_promo_code]["type"]  # получение типа промокода
+            sum_for_pay: int = int(await utils.calc_percentage(promo_code=var_active_promo_code, price=dicts.SERVICE_PRICES[var_service_type]))
 
             if promo_code_type == "common_code":
                 self.__clear_promo_code_db(user_id=user_id)
@@ -141,11 +141,11 @@ class DonationAndPromoCodeButtons(View):
 
         if var_gift_service is not None:
             order_embed.add_field(name=f"Услуга для промокода: {await utils.convert_value_to_service_name(value=var_gift_service)}", value="")
-            var_service = await utils.convert_value_to_service_name(value=var_gift_service)
+            var_service: str = await utils.convert_value_to_service_name(value=var_gift_service)
         else:
-            var_service = await utils.convert_value_to_service_name(value=var_service_type)
+            var_service: str = await utils.convert_value_to_service_name(value=var_service_type)
 
-        avatar = await utils.get_avatar(ctx_user_avatar=ctx.author.avatar)
+        avatar: Member.avatar = await utils.get_avatar(ctx_user_avatar=ctx.author.avatar)
         order_embed.set_author(name=var_client_display_name, icon_url=avatar)
 
         if var_youtube_promo_code_counter is not None:
@@ -164,16 +164,16 @@ class DonationAndPromoCodeButtons(View):
                 SSBot.CLIENT_DB_CONNECTION.commit()
 
         if var_service in SSBot.NOT_STATIC_PRICE:
-            pay_message = "Ваш заказ был отправлен мастерам SkylightServices. Скоро с вами свяжется один из мастеров."
+            pay_message: str = "Ваш заказ был отправлен мастерам SkylightServices. Скоро с вами свяжется один из мастеров."
             pay_message_2 = "\nСсылку для оплаты вам предоставят после связи с сотрудником."
         else:
-            pay_message = "Ваш заказ был отправлен сотрудникам SkylightServices. Скоро с вами свяжется один из мастеров.\nСсылка для оплаты: https://www.donationalerts.com/r/skylightservice ."
+            pay_message: str = "Ваш заказ был отправлен сотрудникам SkylightServices. Скоро с вами свяжется один из мастеров.\nСсылка для оплаты: https://www.donationalerts.com/r/skylightservice ."
 
         embed = Embed(title="Заказ отправлен", color=Color.blurple())
         embed.add_field(name="".join([pay_message, pay_message_2]), value="")
 
         try:
-            pictures = await utils.get_files_disnake(f"cache/{ctx.author.name}/")
+            pictures: list = await utils.get_files_disnake(f"cache/{ctx.author.name}/")
             await WORKER_ORDER_CHANNEL.send(embed=order_embed, view=TakeOrder(self.bot), files=pictures)
             await utils.delete_files_from_cache(author_name=ctx.author.name)
         except FileNotFoundError:

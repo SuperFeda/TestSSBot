@@ -10,6 +10,7 @@ from cogs.view.modals_menu.additional_contacts import AdditionalContactsMenu
 
 
 class ContinueAndAdtConButtonsReg(commands.Cog):
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -27,7 +28,7 @@ class ContinueAndAdtConButtons(disnake.ui.View):
 
     @disnake.ui.button(label="Продолжить", style=disnake.ButtonStyle.green, custom_id="continue_button")
     async def continue_button(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
-        user_id = interaction.author.id
+        user_id: int = interaction.author.id
 
         # find client name
         SSBot.CLIENT_DB_CURSOR.execute("SELECT client_name FROM settings WHERE user_id=?", (user_id,))
@@ -74,10 +75,10 @@ class ContinueAndAdtConButtons(disnake.ui.View):
         result = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_telegram_url = result[0] if result else None
 
-        color = await utils.color_order(var_service_type)  # получение цвета для embed
+        color: disnake.Color = await utils.color_order(var_service_type)  # получение цвета для embed
 
-        order_embed = disnake.Embed(title='Ваш заказ:', color=color)
-        order_embed.add_field(name=f'Код заказа: {var_service_code}\nДата оформления: {var_sending_time} (МСК / GMT+3)\nИмя заказчика: {var_client_display_name} (tag: {var_client_name})\nУслуга: {var_service_type}', value="")
+        order_embed: disnake.Embed = disnake.Embed(title='Ваш заказ:', color=color)
+        order_embed.add_field(name=f'Код заказа: {var_service_code}\nДата оформления: {var_sending_time} (МСК / GMT+3)\nИмя заказчика: {var_client_display_name} (tag: {var_client_name})\nУслуга: {await utils.convert_value_to_service_name(var_service_type)}', value="")
         order_embed.add_field(name="Описание:", value=var_service_description, inline=False)
 
         if var_mail != "" and var_mail is not None or var_vk_url != "" and var_vk_url is not None or var_telegram_url != "" and var_telegram_url is not None:
@@ -93,7 +94,7 @@ class ContinueAndAdtConButtons(disnake.ui.View):
         order_embed.set_author(name=var_client_display_name, icon_url=avatar)
 
         try:
-            pictures = await utils.get_files_disnake(f"cache/{interaction.author.name}/")
+            pictures: list = await utils.get_files_disnake(f"cache/{interaction.author.name}/")
             await interaction.response.send_message(embeds=[CHECKING_ORDER_EMBED, order_embed], files=pictures, view=DonationAndPromoCodeButtons(self.bot))
         except FileNotFoundError:
             await interaction.response.send_message(embeds=[CHECKING_ORDER_EMBED, order_embed], view=DonationAndPromoCodeButtons(self.bot))

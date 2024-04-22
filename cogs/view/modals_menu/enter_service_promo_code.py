@@ -65,7 +65,7 @@ class EnterServicePromoCodeMenu(Modal):
             value="", inline=False
         )
 
-        await member.send(embed=embed, view=ContinueAndCancelButtons(self.bot, enter_promo_code, service))
+        await member.send(embed=embed, view=ContinueAndCancelButtons(bot=self.bot, promo_code=enter_promo_code, service=service))
         await ctx.send(embed=template_embeds.CONTINUE_ORDERING, ephemeral=True)
 
 

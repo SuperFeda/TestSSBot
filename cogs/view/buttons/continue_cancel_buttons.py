@@ -39,9 +39,9 @@ class ContinueAndCancelButtons(disnake.ui.View):
             activated_promo_codes_list_var = result[0] if result else None
 
             if activated_promo_codes_list_var is not None:
-                new_activated_promo_codes_list = activated_promo_codes_list_var + self.promo_code+","
+                new_activated_promo_codes_list: str = activated_promo_codes_list_var + self.promo_code+","
             else:
-                new_activated_promo_codes_list = f"1234567890,{self.promo_code},"
+                new_activated_promo_codes_list: str = f"1234567890,{self.promo_code},"
 
             SSBot.CLIENT_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, activated_promo_codes_list) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET activated_promo_codes_list=?",
@@ -59,7 +59,6 @@ class ContinueAndCancelButtons(disnake.ui.View):
             combination = await utils.generate_random_combination(10)
             for element in codes:
                 if combination in element["code"]:
-                    print(element["code"])
                     combination = await utils.generate_random_combination(10)
                     continue
                 else:
@@ -68,8 +67,8 @@ class ContinueAndCancelButtons(disnake.ui.View):
 
             await utils.write_json(path=SSBot.PATH_TO_CODES, data=codes)
 
-            current_time = datetime.now(tz=timezone('Europe/Moscow')).strftime("%d.%m.%Y %H:%M")  # получение отформатированной даты оформления заказа в ЧП МСК
-            order_code = combination.replace("}", "").replace("{", "")  # Получение кода заказа
+            current_time: str = datetime.now(tz=timezone('Europe/Moscow')).strftime("%d.%m.%Y %H:%M")  # получение отформатированной даты оформления заказа в ЧП МСК
+            order_code: str = combination.replace("}", "").replace("{", "")  # Получение кода заказа
 
             author_avatar = str(await utils.get_avatar(ctx.author.avatar))
 
