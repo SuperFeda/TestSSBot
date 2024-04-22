@@ -7,6 +7,7 @@ from cogs.hadlers import utils
 
 
 class MemberSelectMenuReg(Cog):
+
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -17,6 +18,7 @@ class MemberSelectMenuReg(Cog):
 
 
 class MemberSelectMenu(UserSelect):
+
     def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(
@@ -37,6 +39,7 @@ class MemberSelectMenu(UserSelect):
 
 
 class MemberSelectMenuView(View):
+
     def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)

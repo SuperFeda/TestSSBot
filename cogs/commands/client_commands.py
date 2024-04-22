@@ -10,6 +10,7 @@ from cogs.view.buttons.take_request import TakeRequestButton
 
 
 class ClientCommands(Cog):
+
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -22,10 +23,10 @@ class ClientCommands(Cog):
         ]
     )
     async def send_report(self, ctx, message: str, report_type: str):
-        REPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["report_channel_id"])
-        avatar = utils.get_avatar(ctx.author.avatar)
+        REPORT_CHANNEL: disnake.TextChannel = BOT.get_channel(SSBot.BOT_DATA["report_channel_id"])
+        avatar: disnake.Member.avatar = await utils.get_avatar(ctx.author.avatar)
 
-        report_embed = disnake.Embed(title="Репорт:", color=SSBot.DEFAULT_COLOR)
+        report_embed: disnake.Embed = disnake.Embed(title="Репорт:", color=SSBot.DEFAULT_COLOR)
         report_embed.add_field(name=f"Тип репорта: {report_type}", value="", inline=False)
         report_embed.add_field(name=f"Сообщение: {message}", value='', inline=False)
         report_embed.set_author(name=ctx.author.display_name, icon_url=avatar)
@@ -109,11 +110,11 @@ class ClientCommands(Cog):
         ]
     )
     async def archive(self, ctx, product_name: str, request_type: str):
-        color = await utils.color_archive_request(type_=request_type)
-        channel = BOT.get_channel(SSBot.BOT_DATA["request_channel_id"])
-        avatar = await utils.get_avatar(ctx_user_avatar=ctx.author.avatar)
+        color: disnake.Color = await utils.color_archive_request(type_=request_type)
+        channel: disnake.TextChannel = BOT.get_channel(SSBot.BOT_DATA["request_channel_id"])
+        avatar: disnake.Member.avatar = await utils.get_avatar(ctx_user_avatar=ctx.author.avatar)
 
-        archive_embed = disnake.Embed(title="Новый запрос:", color=color)
+        archive_embed: disnake.Embed = disnake.Embed(title="Новый запрос:", color=color)
         archive_embed.add_field(name="Имя продукта:", value=product_name, inline=False)
         archive_embed.add_field(name="Тип запроса:", value=request_type, inline=False)
         archive_embed.add_field(name="ID запрашивающего:", value=ctx.author.id, inline=False)

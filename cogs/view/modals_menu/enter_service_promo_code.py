@@ -1,6 +1,5 @@
-import disnake
-
-from disnake import Embed
+from disnake import Embed, TextInputStyle, ModalInteraction, Member
+from disnake.ui.modal import Modal, TextInput
 from disnake.ext.commands import Cog
 
 from main import SSBot
@@ -10,6 +9,7 @@ from cogs.view.buttons.continue_cancel_buttons import ContinueAndCancelButtons
 
 
 class EnterServicePromoCodeMenuReg(Cog):
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -19,27 +19,28 @@ class EnterServicePromoCodeMenuReg(Cog):
         self.bot.add_view(EnterServicePromoCodeMenu(bot=self.bot))
 
 
-class EnterServicePromoCodeMenu(disnake.ui.Modal):
+class EnterServicePromoCodeMenu(Modal):
+
     def __init__(self, bot):
         self.bot = bot
         super().__init__(
             title="Ввод промокода", custom_id="service_promo_code_menu",
             timeout=300.0, components=[
-                disnake.ui.TextInput(
+                TextInput(
                     label="Промокод",
                     placeholder="Введите промокод",
                     custom_id="serv_code",
                     required=True,
-                    style=disnake.TextInputStyle.short,
+                    style=TextInputStyle.short,
                     max_length=50,
                 )
             ]
         )
 
-    async def callback(self, ctx: disnake.ModalInteraction):
+    async def callback(self, ctx: ModalInteraction):
         enter_promo_code: str = ctx.text_values["serv_code"]
         promo_codes_data: dict = await utils.async_read_json(SSBot.PATH_TO_PROMO_CODES_DATA)
-        member: disnake.Member = ctx.guild.get_member(ctx.author.id)
+        member: Member = ctx.guild.get_member(ctx.author.id)
 
         if enter_promo_code not in promo_codes_data:
             return await ctx.send(embed=template_embeds.WARN_PROMO_CODE_NOT_IN_DB)

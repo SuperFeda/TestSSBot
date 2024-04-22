@@ -1,7 +1,7 @@
-from disnake import ButtonStyle, Embed, Color, AppCmdInter
+from disnake import ButtonStyle, Embed, Color, AppCmdInter, MessageInteraction
 from disnake.ui import View
 from disnake.ui.button import button, Button
-from disnake.ext.commands import Cog
+from disnake.ext.commands import Cog, Bot
 
 from main import SSBot, BOT
 from cogs.hadlers import utils, dicts
@@ -10,7 +10,8 @@ from cogs.view.modals_menu.promo_code_enter import PromoCodeEnterMenu
 
 
 class DonationAndPromoCodeButtonsReg(Cog):
-    def __init__(self, bot):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     @Cog.listener()
@@ -20,12 +21,13 @@ class DonationAndPromoCodeButtonsReg(Cog):
 
 
 class DonationAndPromoCodeButtons(View):
-    def __init__(self, bot):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
 
     @button(label="Оплатить", style=ButtonStyle.blurple, custom_id="pay_button")
-    async def pay_button(self, button_: Button, ctx):
+    async def pay_button(self, button_: Button, ctx: MessageInteraction):
         button_.disabled = True  # прекратить работу кнопки
 
         user_id = ctx.author.id
@@ -184,7 +186,7 @@ class DonationAndPromoCodeButtons(View):
     async def promo_code_button(self, button_: Button, ctx: AppCmdInter):
         await ctx.response.send_modal(modal=PromoCodeEnterMenu(self.bot))
 
-    def __clear_promo_code_db(self, user_id):
+    def __clear_promo_code_db(self, user_id: int) -> None:
         SSBot.CLIENT_DB_CURSOR.execute(
             "INSERT INTO settings (user_id, promo_code_activated, youtube_promo_code_counter, active_promo_code) VALUES (?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET promo_code_activated=?, active_promo_code=?, youtube_promo_code_counter=?",
             (user_id, False, None, None, False, None, None)

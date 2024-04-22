@@ -1,6 +1,6 @@
 import disnake
 
-from disnake.ext.commands import Cog, slash_command
+from disnake.ext.commands import Cog, slash_command, Context
 
 from main import SSBot, BOT
 from cogs.hadlers import dicts
@@ -12,6 +12,7 @@ from cogs.view.select_menus.question_select import QuestionSelectView
 
 
 class ManagerCommands(Cog):
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -20,7 +21,7 @@ class ManagerCommands(Cog):
         if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["manager_role_id"]) not in ctx.author.roles:
             return await ctx.send(embed=DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        ORDER_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["order_channel_id"])
+        ORDER_CHANNEL: disnake.TextChannel = BOT.get_channel(SSBot.BOT_DATA["order_channel_id"])
 
         # order_embed = disnake.Embed(title="Здароу, я SkylightBot", color=disnake.Color.blurple())
         # order_embed.add_field(name="С моей помощью вы сможете полностью оформить заказ: выбор услуги и создание описания - со всем этим буду помогать я.\nДля начала заполнения нажмите на кнопку \"Оформить заказ\".", value="")
@@ -32,7 +33,7 @@ class ManagerCommands(Cog):
         if disnake.utils.get(ctx.guild.roles, id=SSBot.BOT_DATA["manager_role_id"]) not in ctx.author.roles:
             return await ctx.send(embed=DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        SUPPORT_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
+        SUPPORT_CHANNEL: disnake.TextChannel = BOT.get_channel(SSBot.BOT_DATA["support_channel_id"])
 
         # support_embed = disnake.Embed(title="Поддержка", color=disnake.Color.blurple())
         # support_embed.add_field(name="Тут я могу ответить на все вопросы, которые могли появится у вас во время работы с сервисом.\nВыберите интересующую вас тему в списке ниже:", value="")

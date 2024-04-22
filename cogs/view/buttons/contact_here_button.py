@@ -1,26 +1,26 @@
 import disnake
 
-from disnake.ext import commands
+from disnake.ext.commands import Cog, Bot
 
 from main import SSBot, BOT
 from cogs.view.buttons.take_question import TakeQuestionButton
 from cogs.hadlers.embeds.template_embeds import NOTIFICATION_SEND_EMBED
 
 
-class ContactHereButtonReg(commands.Cog):
+class ContactHereButtonReg(Cog):
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot: Bot):
+        self.bot = bot
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_ready(self):
         print("TakeQuestionButton was added")
-        self.client.add_view(ContactHereButton(bot=self.client))
+        self.bot.add_view(ContactHereButton(bot=self.bot))
 
 
 class ContactHereButton(disnake.ui.View):
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
 

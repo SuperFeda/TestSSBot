@@ -1,22 +1,24 @@
 import disnake
 
-from disnake.ext import commands
+from disnake.ext.commands import Cog, Bot
 
 from cogs.view.modals_menu.promo_code_enter import PromoCodeEnterMenu
 
 
-class PromoCodeButtonReg(commands.Cog):
-    def __init__(self, bot):
+class PromoCodeButtonReg(Cog):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_ready(self):
         print("PromoCodeButton was added")
         self.bot.add_view(PromoCodeButton(bot=self.bot))
 
 
 class PromoCodeButton(disnake.ui.View):
-    def __init__(self, bot):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
 

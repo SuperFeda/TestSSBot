@@ -1,6 +1,6 @@
 import json
 
-from disnake import Embed, SelectOption
+from disnake import Embed, SelectOption, MessageInteraction
 from disnake.ext import commands
 from disnake.ui import View
 from disnake.ui.select.string import StringSelect
@@ -15,7 +15,8 @@ from cogs.view.select_menus.promo_code_service_select import PromoCodeServiceSel
 
 
 class ServiceSelectReg(commands.Cog):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.Cog.listener()
@@ -25,7 +26,8 @@ class ServiceSelectReg(commands.Cog):
 
 
 class ServiceSelect(StringSelect):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         super().__init__(
             placeholder="Список услуг", min_values=1, max_values=1,
@@ -49,10 +51,10 @@ class ServiceSelect(StringSelect):
             ]
         )
 
-    async def callback(self, ctx):
-        user_id = ctx.author.id
+    async def callback(self, interaction: MessageInteraction) -> None:
+        user_id = interaction.author.id
 
-        async with ctx.channel.typing():
+        async with interaction.channel.typing():
 
             with open(SSBot.PATH_TO_CODES, 'r') as file:  # загрузка файла с кодами заказов
                 try:
@@ -86,11 +88,11 @@ class ServiceSelect(StringSelect):
                 )
                 SSBot.CLIENT_DB_CONNECTION.commit()
 
-            author_avatar = str(await utils.get_avatar(ctx.author.avatar))
+            author_avatar = str(await utils.get_avatar(interaction.author.avatar))
 
             SSBot.CLIENT_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, client_name, client_id, service_type, service_code, sending_time, client_display_name, client_avatar, mail, vk_url, telegram_url, can_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET client_name=?, client_id=?, service_type=?, service_code=?, sending_time=?, client_display_name=?, client_avatar=?, mail=?, vk_url=?, telegram_url=?, can_description=?",
-                (user_id, ctx.author.name, ctx.author.id, self.values[0], order_code, current_time, ctx.author.display_name, author_avatar, None, None, None, False, ctx.author.name, ctx.author.id, self.values[0], order_code, current_time, ctx.author.display_name, author_avatar, None, None, None, False)
+                (user_id, interaction.author.name, interaction.author.id, self.values[0], order_code, current_time, interaction.author.display_name, author_avatar, None, None, None, False, interaction.author.name, interaction.author.id, self.values[0], order_code, current_time, interaction.author.display_name, author_avatar, None, None, None, False)
             )
             SSBot.CLIENT_DB_CONNECTION.commit()
 
@@ -115,10 +117,14 @@ class ServiceSelect(StringSelect):
 
                 view = PromoCodeServiceSelectView(self.bot)
 
-        await ctx.send(embed=embed, view=view)
+        await interaction.send(embed=embed, view=view)
+
+    # def to_components(self):
+    #     return super().to_components()
 
 
 class ServiceSelectView(View):
+
     def __init__(self, bot):
         self.bot = bot
         super().__init__(timeout=None)

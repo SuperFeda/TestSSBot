@@ -6,7 +6,8 @@ from cogs.view.modals_menu.enter_service_promo_code import EnterServicePromoCode
 
 
 class ServicePromoCodeButtonReg(commands.Cog):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.Cog.listener()
@@ -16,7 +17,8 @@ class ServicePromoCodeButtonReg(commands.Cog):
 
 
 class ServicePromoCodeButton(disnake.ui.View):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         super().__init__(timeout=None)
 

@@ -1,4 +1,4 @@
-import disnake, sqlite3
+import disnake
 
 from disnake.ext import commands
 from disnake import Localized
@@ -9,21 +9,19 @@ from cogs.hadlers.embeds import template_embeds
 
 
 class OwnerCommands(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
     @commands.slash_command(name="get_salary_list")
     async def get_salary_list(self, ctx):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM settings")
-        result = cursor.fetchall()
-        connection.close()
+        SSBot.WORKER_DB_CURSOR.execute("SELECT * FROM settings")
+        result = SSBot.WORKER_DB_CURSOR.fetchall()
 
-        workers_salary_embed = disnake.Embed(title="Список зарплат:", colour=disnake.Color.blurple())
+        workers_salary_embed: disnake.Embed = disnake.Embed(title="Список зарплат:", colour=disnake.Color.blurple())
         for num, item in enumerate(result):
             workers_salary_embed.add_field(name=f"{num+1}) {item[3]} ({item[2]}): {item[1]}₽", value="", inline=False)
 
@@ -34,22 +32,16 @@ class OwnerCommands(commands.Cog):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM settings")
-        result = cursor.fetchall()
-        connection.close()
+        SSBot.WORKER_DB_CURSOR.execute("SELECT * FROM settings")
+        result = SSBot.WORKER_DB_CURSOR.fetchall()
 
         for item in result:
-            connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
-            cursor = connection.cursor()
-            user_id = item[0]
-            cursor.execute(
+            user_id: int = item[0]
+            SSBot.WORKER_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, worker_salary) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?",
                 (user_id, 0, 0)
             )
-            connection.commit()
-            connection.close()
+            SSBot.WORKER_DB_CONNECTION.commit()
 
         await ctx.send(embed=template_embeds.SALARIES_CANCELLED_EMBED, ephemeral=True)
 
@@ -58,29 +50,23 @@ class OwnerCommands(commands.Cog):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        user_id = worker.id
+        user_id: int = worker.id
 
-        connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
-        cursor = connection.cursor()
-        cursor.execute("SELECT worker_salary FROM settings WHERE user_id=?", (user_id,))
-        result = cursor.fetchone()
+        SSBot.WORKER_DB_CURSOR.execute("SELECT worker_salary FROM settings WHERE user_id=?", (user_id,))
+        result = SSBot.WORKER_DB_CURSOR.fetchone()
         var_worker_salary = result[0] if result else None
-        connection.close()
 
-        connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
-        cursor = connection.cursor()
-        cursor.execute(
+        SSBot.WORKER_DB_CURSOR.execute(
             "INSERT INTO settings (user_id, worker_salary) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?",
             (user_id, salary, salary)
         )
-        connection.commit()
-        connection.close()
+        SSBot.WORKER_DB_CONNECTION.commit()
 
-        avatar = utils.get_avatar(worker.avatar)
+        avatar: disnake.Member.avatar = await utils.get_avatar(worker.avatar)
 
-        embed = (disnake.Embed(title="Зарплата изменена", color=disnake.Color.blurple())
-                 .set_author(name=worker.display_name, icon_url=avatar)
-                 .add_field(name=f"Зарплата для {worker.display_name} изменена с {var_worker_salary}₽ на {salary}₽", value=""))
+        embed: disnake.Embed = disnake.Embed(title="Зарплата изменена", color=disnake.Color.blurple())
+        embed.set_author(name=worker.display_name, icon_url=avatar)
+        embed.add_field(name=f"Зарплата для {worker.display_name} изменена с {var_worker_salary}₽ на {salary}₽", value="")
 
         await ctx.send(embed=embed, ephemeral=True)
 
@@ -93,26 +79,20 @@ class OwnerCommands(commands.Cog):
             embed = utils.create_embed(title="Отказано", color=disnake.Color.red(), content=f"{sure = }")
             return await ctx.send(embed=embed, ephemeral=True)
 
-        connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM settings")
-        result = cursor.fetchall()
-        connection.close()
+        SSBot.WORKER_DB_CURSOR.execute("SELECT * FROM settings")
+        result = SSBot.WORKER_DB_CURSOR.fetchall()
 
-        embed = disnake.Embed(title="Изменения зарплат:", color=disnake.Color.blurple())
+        embed: disnake.Embed = disnake.Embed(title="Изменения зарплат:", color=disnake.Color.blurple())
 
         for item in result:
             embed.add_field(name=f"Зарплата {item[3]} ({item[2]}) изменена с {item[1]}₽ на {salary}₽", value='', inline=False)
 
-            connection = sqlite3.connect(SSBot.PATH_TO_WORKER_DB)
-            cursor = connection.cursor()
             user_id = item[0]
-            cursor.execute(
+            SSBot.WORKER_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, worker_salary) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?",
                 (user_id, salary, salary)
             )
-            connection.commit()
-            connection.close()
+            SSBot.WORKER_DB_CONNECTION.commit()
 
         await ctx.send(embed=embed, ephemeral=True)
 
@@ -125,14 +105,20 @@ class OwnerCommands(commands.Cog):
 
     @commands.slash_command(name="add_promo_code")
     async def add_promo_code(
-            self, ctx, promo_code_name: str, discount_rate: int, service: str | None = None, count: int | None = None,
-            count_for_use: int | None = None, date: str | None = commands.Param(default=None, description="Format: day.month.year"),
+            self,
+            ctx,
+            promo_code_name: str,
+            discount_rate: int,
+            service: str | None = None,
+            count: int | None = None,
+            count_for_use: int | None = None,
+            date: str | None = commands.Param(default=None, description="Format: day.month.year"),
             pc_type: str = commands.Param(choices=bot_choices.CHOICE_FOR_PC_TYPE)
     ):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        pc_data = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
+        pc_data: dict = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
 
         if promo_code_name in pc_data:
             return await ctx.send(f"Промокод **{promo_code_name}** уже есть в базе данных.", ephemeral=True)
@@ -168,7 +154,7 @@ class OwnerCommands(commands.Cog):
 
         await utils.write_json(path=SSBot.PATH_TO_PROMO_CODES_DATA, data=pc_data)
 
-        embed = utils.create_embed(title="Промокод добавлен", color=disnake.Color.blurple(), content=f"Промокод **{promo_code_name}** добавлен в базу данных в категорию \"{pc_type}\".\nКод: ```{pc_data[promo_code_name]}```")
+        embed: disnake.Embed = utils.create_embed(title="Промокод добавлен", color=disnake.Color.blurple(), content=f"Промокод **{promo_code_name}** добавлен в базу данных в категорию \"{pc_type}\".\nКод: ```{pc_data[promo_code_name]}```")
 
         await ctx.send(embed=embed, ephemeral=True)
 
@@ -177,11 +163,11 @@ class OwnerCommands(commands.Cog):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
             return await ctx.send(embed=template_embeds.DOESNT_HAVE_PERMISSION, ephemeral=True)
 
-        pc_data = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
+        pc_data: dict = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)
         pc_data.pop(promo_code_name)
         await utils.write_json(path=SSBot.PATH_TO_PROMO_CODES_DATA, data=pc_data)
 
-        embed = utils.create_embed(title="Промокод удален", color=disnake.Color.red(), content=f"Промокод {promo_code_name} удален из базы данных.")
+        embed: disnake.Embed = utils.create_embed(title="Промокод удален", color=disnake.Color.red(), content=f"Промокод {promo_code_name} удален из базы данных.")
 
         await ctx.send(embed=embed, ephemeral=True)
 
@@ -198,14 +184,10 @@ class OwnerCommands(commands.Cog):
         elif true_or_false is False:
             color = disnake.Color.red()
 
-        embed = utils.create_embed(title="bot_can_take_order изменен", color=color, content=f"`bot_can_take_order` изменен на `{true_or_false}`.")
+        embed: disnake.Embed = utils.create_embed(title="bot_can_take_order изменен", color=color, content=f"`bot_can_take_order` изменен на `{true_or_false}`.")
 
         await ctx.send(embed=embed, ephemeral=True)
 
-    # @commands.slash_command(name="test")
-    # async def test(self, ctx):
-    #     await ctx.send("FSDFSDFSS", view=MemberSelectMenuView(self.client))
 
-
-def setup(client):
-    client.add_cog(OwnerCommands(client))
+def setup(bot):
+    bot.add_cog(OwnerCommands(bot))

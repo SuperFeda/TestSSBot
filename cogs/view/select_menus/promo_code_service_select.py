@@ -9,6 +9,7 @@ from cogs.view.buttons.donation_and_promo_code_buttons import DonationAndPromoCo
 
 
 class PromoCodeServiceSelectReg(Cog):
+
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -19,6 +20,7 @@ class PromoCodeServiceSelectReg(Cog):
 
 
 class PromoCodeServiceSelect(StringSelect):
+
     def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(
@@ -59,6 +61,7 @@ class PromoCodeServiceSelect(StringSelect):
 
 
 class PromoCodeServiceSelectView(View):
+
     def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)

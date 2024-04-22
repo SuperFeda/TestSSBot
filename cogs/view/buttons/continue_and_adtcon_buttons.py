@@ -10,7 +10,7 @@ from cogs.view.modals_menu.additional_contacts import AdditionalContactsMenu
 
 
 class ContinueAndAdtConButtonsReg(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.Cog.listener()
@@ -20,7 +20,8 @@ class ContinueAndAdtConButtonsReg(commands.Cog):
 
 
 class ContinueAndAdtConButtons(disnake.ui.View):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         super().__init__(timeout=None)
 

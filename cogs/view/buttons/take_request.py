@@ -7,6 +7,7 @@ from main import SSBot
 
 
 class TakeRequestButtonReg(commands.Cog):
+
     def __init__(self, client):
         self.client = client
 
@@ -17,6 +18,7 @@ class TakeRequestButtonReg(commands.Cog):
 
 
 class TakeRequestButton(disnake.ui.View):
+
     def __init__(self, bot):
         self.bot = bot
         super().__init__(timeout=None)
@@ -24,8 +26,8 @@ class TakeRequestButton(disnake.ui.View):
     @disnake.ui.button(label="Принять", style=disnake.ButtonStyle.green, custom_id="take_request_button")
     async def take_request(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
         message: disnake.Message = await interaction.channel.fetch_message(interaction.message.id)
-        client_id_from_embed: str = await self.__get_value_from_embed(data=message.embeds[0]._fields[2])
-        product_name_from_embed: str = await self.__get_value_from_embed(data=message.embeds[0]._fields[0])
+        client_id_from_embed: str = message.embeds[0]._fields[2]["value"]
+        product_name_from_embed: str = message.embeds[0]._fields[0]["value"]
         category: disnake.CategoryChannel = disnake.utils.get(interaction.guild.categories, id=SSBot.BOT_DATA["requests_category_id"])
         client: disnake.Member = interaction.guild.get_member(int(client_id_from_embed))
         avatar: disnake.Member.avatar = await utils.get_avatar(ctx_user_avatar=interaction.author.avatar)
@@ -55,14 +57,6 @@ class TakeRequestButton(disnake.ui.View):
         await message.edit(embed=embed, view=None)
 
         await channel.send(f"<@{interaction.author.id}> \n<@{int(client_id_from_embed)}>")
-
-    async def __get_value_from_embed(self, data: dict) -> str:
-        """
-        Получение определенного значения из Embed
-        :param data: данные из которых нужно вытащить значение
-        :return: значение
-        """
-        return data["value"]
 
 
 def setup(client):

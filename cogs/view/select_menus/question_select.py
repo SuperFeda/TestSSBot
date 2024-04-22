@@ -1,35 +1,38 @@
-import disnake
-
-from disnake.ext import commands
+from disnake import SelectOption
+from disnake.ext.commands import Bot, Cog
+from disnake.ui import View
+from disnake.ui.select.string import StringSelect
 
 from cogs.hadlers.embeds import support_question_embeds
 from cogs.view.buttons.contact_here_button import ContactHereButton
 
 
-class QuestionSelectReg(commands.Cog):
-    def __init__(self, bot):
+class QuestionSelectReg(Cog):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.Cog.listener()
+    @Cog.listener()
     async def on_ready(self):
         print("QuestionSelect was added")
         self.bot.add_view(QuestionSelectView(bot=self.bot))
 
 
-class QuestionSelect(disnake.ui.StringSelect):
-    def __init__(self, bot):
+class QuestionSelect(StringSelect):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(
             placeholder="Какой у вас вопрос?", min_values=1, max_values=1,
             custom_id="question_select", options=[
-                disnake.SelectOption(label="Обратная связь", value="connection"),
-                disnake.SelectOption(label="Как оформить заказ?", value="how_order"),
+                SelectOption(label="Обратная связь", value="connection"),
+                SelectOption(label="Как оформить заказ?", value="how_order"),
                 # disnake.SelectOption(label="Как устроена оплата?", value="how_pay"),
-                disnake.SelectOption(label="Правки", value="edits"),
-                disnake.SelectOption(label="Доп. контакты связи", value="add_contacts"),
-                disnake.SelectOption(label="Бот выдает ошибку взаимодействия", value="bot_error"),
+                SelectOption(label="Правки", value="edits"),
+                SelectOption(label="Доп. контакты связи", value="add_contacts"),
+                SelectOption(label="Бот выдает ошибку взаимодействия", value="bot_error"),
                 # disnake.SelectOption(label="Как пользоваться архивом?", value="archive"),
-                disnake.SelectOption(label="Как стать сотрудником SkylightServices?", value="ss_worker")
+                SelectOption(label="Как стать сотрудником SkylightServices?", value="ss_worker")
             ]
         )
 
@@ -74,8 +77,9 @@ class QuestionSelect(disnake.ui.StringSelect):
             await ctx.send(embed=embed, ephemeral=True)
 
 
-class QuestionSelectView(disnake.ui.View):
-    def __init__(self, bot):
+class QuestionSelectView(View):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
         self.add_item(QuestionSelect(self.bot))

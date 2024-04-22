@@ -1,6 +1,6 @@
-import disnake, sqlite3
+import disnake
 
-from disnake.ext import commands
+from disnake.ext.commands import Cog, Bot
 
 from main import SSBot
 from cogs.hadlers import utils
@@ -8,39 +8,36 @@ from cogs.hadlers.embeds.template_embeds import REVIEW_CHECKING_EMBED
 from cogs.systems.rate_system.send_review_button import SendReviewButton
 
 
-class ContinueButtonForReviewReg(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+class ContinueButtonForReviewReg(Cog):
 
-    @commands.Cog.listener()
+    def __init__(self, bot: Bot):
+        self.bot = bot
+
+    @Cog.listener()
     async def on_ready(self):
         print("ContinueButtonForReview was added")
-        self.client.add_view(ContinueButtonForReview(bot=self.client))
+        self.bot.add_view(ContinueButtonForReview(bot=self.bot))
 
 
 class ContinueButtonForReview(disnake.ui.View):
-    def __init__(self, bot):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
 
     @disnake.ui.button(label="Продолжить", style=disnake.ButtonStyle.green, custom_id="continue_button_for_review")
     async def continue_button_for_review(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
-        avatar = await utils.get_avatar(interaction.author.avatar)
-        user_id = interaction.author.id
+        avatar: disnake.Member.avatar = await utils.get_avatar(interaction.author.avatar)
+        user_id: int = interaction.author.id
         file = None
 
-        connection_ = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
-        cursor_ = connection_.cursor()
-
-        cursor_.execute("SELECT stars FROM settings WHERE user_id=?", (user_id,))
-        result_ = cursor_.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT stars FROM settings WHERE user_id=?", (user_id,))
+        result_ = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_stars = result_[0] if result_ else None
 
-        cursor_.execute("SELECT service_description FROM settings WHERE user_id=?", (user_id,))
-        result_ = cursor_.fetchone()
+        SSBot.CLIENT_DB_CURSOR.execute("SELECT service_description FROM settings WHERE user_id=?", (user_id,))
+        result_ = SSBot.CLIENT_DB_CURSOR.fetchone()
         var_description = result_[0] if result_ else None
-
-        connection_.close()
 
         review = disnake.Embed(title="Ваш отзыв:", color=SSBot.DEFAULT_COLOR)
         review.add_field(name=f"Оценка: {await utils.star_count_conv(count=var_stars)}", value=var_description, inline=False)

@@ -11,7 +11,7 @@ from disnake import (
 )
 from disnake.ui import View
 from disnake.ui.button import button, Button
-from disnake.ext.commands import Cog
+from disnake.ext.commands import Cog, Bot
 
 from main import SSBot
 from cogs.hadlers import utils as bot_utils, dicts
@@ -19,7 +19,8 @@ from cogs.hadlers.embeds import question_embeds
 
 
 class TakeOrderReg(Cog):
-    def __init__(self, bot):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     @Cog.listener()
@@ -29,7 +30,8 @@ class TakeOrderReg(Cog):
 
 
 class TakeOrder(View):
-    def __init__(self, bot):
+
+    def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
 
@@ -108,12 +110,12 @@ class TakeOrder(View):
             SSBot.WORKER_DB_CONNECTION.commit()
 
         if ctx.author.id == client_id_from_embed:
-            permissions = {
+            permissions: dict = {
                 ctx.guild.default_role: PermissionOverwrite(read_messages=False, view_channel=False, send_messages=False),
                 ctx.author: PermissionOverwrite(read_messages=True, send_messages=True, view_channel=True)
             }
         else:
-            permissions = {
+            permissions: dict = {
                 ctx.guild.default_role: PermissionOverwrite(read_messages=False, view_channel=False, send_messages=False),
                 ctx.author: PermissionOverwrite(read_messages=True, send_messages=True, view_channel=True),
                 ctx.guild.get_member(client_id_from_embed): PermissionOverwrite(read_messages=True, send_messages=True, view_channel=True)
@@ -127,13 +129,13 @@ class TakeOrder(View):
         embed: Embed = client_order_message.embeds[0]
         embed.set_footer(text=f"Заказ принял: {ctx.author.display_name}", icon_url=avatar)
 
-        if service_type_from_embed == SSBot.SKIN64:
+        if service_type_from_embed == "skin64":
             await channel.send(f"<@{client_id_from_embed}> ,", embed=question_embeds.SKIN_QUESTION_EMBED)
-        elif service_type_from_embed == SSBot.TOTEM:
+        elif service_type_from_embed == "totem":
             await channel.send(f"<@{client_id_from_embed}> ,", embed=question_embeds.TOTEM_QUESTION_EMBED)
-        elif service_type_from_embed in (SSBot.LETTER_LOGO, SSBot.LETTER_LOGO_2):
+        elif service_type_from_embed in ("letter_logo", "letter_logo_2"):
             await channel.send(f"<@{client_id_from_embed}> ,", embed=question_embeds.LOGO_QUESTION_EMBED, file=question_embeds.LOGOS)
-        elif service_type_from_embed == SSBot.CHARACTERS_DESIGN:
+        elif service_type_from_embed == "characters_design":
             await channel.send(f"<@{client_id_from_embed}> ,", embed=question_embeds.CHARACTERS_QUESTION_EMBED)
         else:
             await channel.send(f"<@{client_id_from_embed}>")
@@ -149,14 +151,6 @@ class TakeOrder(View):
 
         await channel.send(f"<@{ctx.author.id}>")
         await client_order_message.edit(embed=embed, view=None)
-
-    # async def __get_value_from_embed(self, data: dict) -> str:
-    #     """
-    #     Получение определенного значения из Embed
-    #     :param data: данные из которых нужно вытащить значение
-    #     :return: значение
-    #     """
-    #     return data["value"]
 
     async def __save_owner_salary(self, flag: bool, owner: Member, promo_code_type: str, service_type: str, enter_promo_code: str, worker_salary: int = 0, new_worker_salary: int = 0) -> None:
         """

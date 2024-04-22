@@ -1,5 +1,5 @@
-import disnake
-
+from disnake import Embed, TextInputStyle, ModalInteraction, Color
+from disnake.ui.modal import Modal, TextInput
 from datetime import datetime
 from pytz import timezone
 from disnake.ext.commands import Cog
@@ -10,6 +10,7 @@ from cogs.hadlers.embeds import template_embeds
 
 
 class PromoCodeEnterMenuReg(Cog):
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -19,23 +20,24 @@ class PromoCodeEnterMenuReg(Cog):
         self.bot.add_view(PromoCodeEnterMenu(bot=self.bot))
 
 
-class PromoCodeEnterMenu(disnake.ui.Modal):
+class PromoCodeEnterMenu(Modal):
+
     def __init__(self, bot):
         self.bot = bot
         super().__init__(
             title="Ввод промокода", custom_id="promo_code_enter",
             timeout=300.0, components=[
-                disnake.ui.TextInput(
+                TextInput(
                     label="Промокод",
                     placeholder="Введите промокод",
                     custom_id="promo_code",
-                    style=disnake.TextInputStyle.short,
+                    style=TextInputStyle.short,
                     max_length=50,
                 )
             ]
         )
 
-    async def callback(self, ctx: disnake.ModalInteraction):
+    async def callback(self, ctx: ModalInteraction):
         promo_codes_data: dict = await utils.async_read_json(path=SSBot.PATH_TO_PROMO_CODES_DATA)  # подгрузка файла с данными о промокодами
         entered_promo_code: str = ctx.text_values["promo_code"]  # Получение данных введенных в TextInput под id "promo_code" в модальном меню
         user_id: int = ctx.author.id
@@ -48,7 +50,7 @@ class PromoCodeEnterMenu(disnake.ui.Modal):
         if entered_promo_code not in promo_codes_data:
             return await ctx.send(embed=template_embeds.WARN_PROMO_CODE_NOT_IN_DB)
         if promo_code_type == "service_code":
-            __embed: disnake.Embed = utils.create_embed(title="Не подходящий тип промокода", color=disnake.Color.red(), content="Вы ввели подарочный промокод, но проблема в том, что его нужно было вводить в самом начале оформления заказа нажав на кнопку \"Ввести промокод\".\nВы можете ввести другой промокод, либо вернуться в начало и переоформить заказ.")
+            __embed: Embed = utils.create_embed(title="Не подходящий тип промокода", color=Color.red(), content="Вы ввели подарочный промокод, но проблема в том, что его нужно было вводить в самом начале оформления заказа нажав на кнопку \"Ввести промокод\".\nВы можете ввести другой промокод, либо вернуться в начало и переоформить заказ.")
             return await ctx.send(embed=__embed)
 
         async with ctx.channel.typing():

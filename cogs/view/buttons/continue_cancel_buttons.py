@@ -5,11 +5,12 @@ from pytz import timezone
 from disnake.ext import commands
 
 from cogs.view.buttons.enter_description_button import EnterDescriptionButton
-from main import SSBot, BOT
+from main import SSBot
 from cogs.hadlers import utils
 
 
 class ContinueAndCancelButtonsReg(commands.Cog):
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -20,6 +21,7 @@ class ContinueAndCancelButtonsReg(commands.Cog):
 
 
 class ContinueAndCancelButtons(disnake.ui.View):
+
     def __init__(self, bot: commands.Bot, promo_code: str, service: str):
         self.bot = bot
         self.promo_code = promo_code

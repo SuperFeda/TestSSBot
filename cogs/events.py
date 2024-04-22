@@ -17,6 +17,7 @@ from cogs.systems.rate_system.continue_button_for_review import ContinueButtonFo
 
 
 class BotEvents(commands.Cog):
+
     def __init__(self, client):
         self.client = client
 

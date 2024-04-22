@@ -1,4 +1,4 @@
-import disnake, sqlite3
+import disnake
 
 from disnake.ext import commands
 
@@ -7,7 +7,8 @@ from cogs.hadlers.embeds.template_embeds import ENTER_DESC_EMBED, ENTER_REWIEW_E
 
 
 class EnterDescriptionButtonReg(commands.Cog):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.Cog.listener()
@@ -17,20 +18,18 @@ class EnterDescriptionButtonReg(commands.Cog):
 
 
 class EnterDescriptionButton(disnake.ui.View):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         super().__init__(timeout=None)
 
     @disnake.ui.button(label="Ввод описания", style=disnake.ButtonStyle.gray, custom_id="enter_description_button")
-    async def enter_desc_button(self, button: disnake.ui.Button, ctx):
-        connection_ = sqlite3.connect(SSBot.PATH_TO_CLIENT_DB)
-        cursor_ = connection_.cursor()
-        cursor_.execute(
+    async def enter_desc_button(self, button: disnake.ui.Button, ctx: disnake.MessageInteraction):
+        SSBot.CLIENT_DB_CURSOR.execute(
             "INSERT INTO settings (user_id, can_description) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET can_description=?",
             (ctx.author.id, True, True)
         )
-        connection_.commit()
-        connection_.close()
+        SSBot.CLIENT_DB_CONNECTION.commit()
 
         try:
             if "отзыв" in ctx.channel.name:
