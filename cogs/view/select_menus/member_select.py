@@ -43,7 +43,8 @@ class MemberSelectMenuView(View):
     def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
-        self.add_item(MemberSelectMenu(self.bot))
+        self.member_select_menu = MemberSelectMenu(self.bot)
+        self.add_item(self.member_select_menu)
 
 
 def setup(bot) -> None:

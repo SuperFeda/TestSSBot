@@ -6,6 +6,8 @@ from disnake import Localized
 from main import SSBot
 from cogs.hadlers import utils, bot_choices
 from cogs.hadlers.embeds import template_embeds
+from cogs.view.select_menus.member_select import MemberSelectMenuView
+from cogs.view.buttons.contact_here_button import ContactHereButton
 
 
 class OwnerCommands(commands.Cog):
@@ -87,7 +89,7 @@ class OwnerCommands(commands.Cog):
         for item in result:
             embed.add_field(name=f"Зарплата {item[3]} ({item[2]}) изменена с {item[1]}₽ на {salary}₽", value='', inline=False)
 
-            user_id = item[0]
+            user_id: int = item[0]
             SSBot.WORKER_DB_CURSOR.execute(
                 "INSERT INTO settings (user_id, worker_salary) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET worker_salary=?",
                 (user_id, salary, salary)
@@ -112,7 +114,7 @@ class OwnerCommands(commands.Cog):
             service: str | None = None,
             count: int | None = None,
             count_for_use: int | None = None,
-            date: str | None = commands.Param(default=None, description="Format: day.month.year"),
+            date: str | None = commands.Param(default=None, description="Format: day.month.year hour:minute"),
             pc_type: str = commands.Param(choices=bot_choices.CHOICE_FOR_PC_TYPE)
     ):
         if ctx.author.name != SSBot.BOT_DATA["owner_name"] and ctx.author.id != SSBot.BOT_DATA["owner_id"]:
@@ -187,6 +189,14 @@ class OwnerCommands(commands.Cog):
         embed: disnake.Embed = utils.create_embed(title="bot_can_take_order изменен", color=color, content=f"`bot_can_take_order` изменен на `{true_or_false}`.")
 
         await ctx.send(embed=embed, ephemeral=True)
+
+    @commands.slash_command(name="test", description="")
+    async def test(self, ctx) -> None:
+        components: list = [
+            MemberSelectMenuView(self.bot).member_select_menu,
+            ContactHereButton(self.bot).contact_here
+        ]
+        await ctx.send(components=components)
 
 
 def setup(bot):

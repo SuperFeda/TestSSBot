@@ -25,7 +25,7 @@ class PromoCodeServiceSelect(StringSelect):
         self.bot = bot
         super().__init__(
             placeholder="Список услуг", min_values=1, max_values=1,
-            custom_id="service_select", options=[
+            custom_id="pr_service_select", options=[
                 SelectOption(label=SSBot.SERVICES_NAME["skin64"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["skin64"]["code"]]}₽', value="skin64", emoji="🧍‍♂️"),
                 SelectOption(label=SSBot.SERVICES_NAME["rew_skin"]["name"], description=f'{SERVICE_PRICES[SSBot.SERVICES_NAME["rew_skin"]["code"]]}₽', value="rew_skin", emoji="🧍‍♂️"),
 
@@ -65,7 +65,8 @@ class PromoCodeServiceSelectView(View):
     def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
-        self.add_item(PromoCodeServiceSelect(self.bot))
+        self.pr_service_select = PromoCodeServiceSelect(self.bot)
+        self.add_item(self.pr_service_select)
 
 
 def setup(bot):

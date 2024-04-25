@@ -119,16 +119,14 @@ class ServiceSelect(StringSelect):
 
         await interaction.send(embed=embed, view=view)
 
-    # def to_components(self):
-    #     return super().to_components()
-
 
 class ServiceSelectView(View):
 
     def __init__(self, bot):
         self.bot = bot
         super().__init__(timeout=None)
-        self.add_item(ServiceSelect(self.bot))
+        self.service_select = ServiceSelect(self.bot)
+        self.add_item(self.service_select)
 
 
 def setup(bot):

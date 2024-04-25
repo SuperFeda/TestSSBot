@@ -28,7 +28,7 @@ class ContactHereButton(disnake.ui.View):
     async def contact_here(self, button: disnake.ui.Button, interaction: disnake.MessageInteraction):
         QUESTIONS_CHANNEL = BOT.get_channel(SSBot.BOT_DATA["questions_channel_id"])
 
-        embed_for_qs = disnake.Embed(title="Новый вопрос", color=disnake.Color.blurple())
+        embed_for_qs: disnake.Embed = disnake.Embed(title="Новый вопрос", color=disnake.Color.blurple())
         embed_for_qs.add_field(name=f"Имя: {interaction.author.display_name} ({interaction.author.name})", value="", inline=False)
         embed_for_qs.add_field(name="ID:", value=interaction.author.id, inline=False)
 

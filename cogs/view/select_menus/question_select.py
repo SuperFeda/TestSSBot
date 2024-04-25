@@ -83,7 +83,8 @@ class QuestionSelectView(View):
     def __init__(self, bot: Bot):
         self.bot = bot
         super().__init__(timeout=None)
-        self.add_item(QuestionSelect(self.bot))
+        self.question_select = QuestionSelect(self.bot)
+        self.add_item(self.question_select)
 
 
 def setup(bot):
